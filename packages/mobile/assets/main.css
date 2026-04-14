@@ -1,0 +1,19 @@
+:root {
+  --bg-color: #f7f3ec;
+  --text-main: #2b2524;
+  --text-muted: #5e524f;
+  --primary: #c24a3b;
+  --primary-hover: #a83d30;
+  --accent: #e0adb0;
+  --accent-light: #f1d6d8;
+  --border-light: #e5dac9;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-main);
+    font-family: 'Inter', 'Outfit', 'Segoe UI', Tahoma, sans-serif;
+    margin: 0;
+    padding: 20px;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}

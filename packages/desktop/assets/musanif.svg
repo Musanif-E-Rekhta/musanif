@@ -1,0 +1,28 @@
+<svg width="460" height="460" viewBox="0 0 460 460" role="img" xmlns="http://www.w3.org/2000/svg">
+  <title>musanif github organization photo</title>
+  <desc>musanif Urdu angular logo formatted as square for GitHub organization profile</desc>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Kufi+Arabic:wght@900&display=swap');
+    .kufi { font-family: 'Noto Kufi Arabic', 'Arial', sans-serif; }
+  </style>
+
+  <!-- Background fill -->
+  <rect width="460" height="460" fill="#F5EFE6"/>
+
+  <!-- Centered Urdu text -->
+  <text
+    x="230"
+    y="272"
+    text-anchor="middle"
+    class="kufi"
+    font-size="110"
+    font-weight="900"
+    fill="#C9503A"
+    direction="rtl"
+  >مصنف</text>
+
+  <!-- Subtle underline -->
+  <rect x="130" y="292" width="200" height="3" fill="#C9503A" opacity="0.35"/>
+
+</svg>
