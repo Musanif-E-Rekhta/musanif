@@ -1,0 +1,15 @@
+#blog {
+  margin-top: 50px;
+}
+
+#blog a {
+  color: var(--primary);
+  margin-top: 50px;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+#blog a:hover {
+  color: var(--primary-hover);
+}

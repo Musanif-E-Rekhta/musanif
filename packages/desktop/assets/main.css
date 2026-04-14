@@ -1,0 +1,81 @@
+:root {
+    --bg-color: #f7f3ec;
+    --text-main: #2b2524;
+    --text-muted: #5e524f;
+    --primary: #c24a3b;
+    --primary-hover: #a83d30;
+    --accent: #e0adb0;
+    --accent-light: #f1d6d8;
+    --border-light: #e5dac9;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-main);
+    font-family: 'Inter', 'Outfit', 'Segoe UI', Tahoma, sans-serif;
+    margin: 0;
+    padding: 0;
+    transition: background-color 0.3s ease, color 0.3s ease;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+#titlebar {
+    height: 40px;
+    background-color: var(--bg-color);
+    border-bottom: 1px solid var(--border-light);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 16px;
+    user-select: none;
+    -webkit-app-region: drag;
+    /* Makes it draggble in some webviews */
+}
+
+.titlebar-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+    color: var(--primary)
+}
+
+.titlebar-icon {
+    width: 20px;
+    height: 20px;
+}
+
+.titlebar-controls {
+    display: flex;
+    gap: 8px;
+    -webkit-app-region: no-drag;
+}
+
+.titlebar-controls button {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    padding: 4px 8px;
+    border-radius: 4px;
+    color: var(--text-muted);
+    transition: all 0.2s;
+}
+
+.titlebar-controls button:hover {
+    background-color: var(--accent-light);
+    color: var(--primary);
+}
+
+.titlebar-controls button.close:hover {
+    background-color: var(--primary);
+    color: white;
+}
+
+.content {
+    padding: 20px;
+    flex-grow: 1;
+    overflow-y: auto;
+}
