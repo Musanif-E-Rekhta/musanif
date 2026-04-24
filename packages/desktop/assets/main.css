@@ -34,12 +34,14 @@ body {
     /* Makes it draggble in some webviews */
 }
 
-.titlebar-left {
+.titlebar-brand {
     display: flex;
     align-items: center;
     gap: 8px;
-    font-weight: 600;
-    color: var(--primary)
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: var(--primary);
+    cursor: pointer;
 }
 
 .titlebar-icon {
@@ -79,3 +81,23 @@ body {
     flex-grow: 1;
     overflow-y: auto;
 }
+
+/* ── Resize handles ──────────────────────────────────────────── */
+
+.resize-handle {
+    position: fixed;
+    z-index: 9999;
+    user-select: none;
+}
+
+/* edges — inset 8px from corners so the corner handles take priority */
+.resize-n  { top: 0;    left: 8px;  right: 8px;  height: 4px; cursor: n-resize;    }
+.resize-s  { bottom: 0; left: 8px;  right: 8px;  height: 4px; cursor: s-resize;    }
+.resize-e  { right: 0;  top: 8px;   bottom: 8px; width: 4px;  cursor: e-resize;    }
+.resize-w  { left: 0;   top: 8px;   bottom: 8px; width: 4px;  cursor: w-resize;    }
+
+/* corners */
+.resize-nw { top: 0;    left: 0;  width: 8px; height: 8px; cursor: nw-resize; }
+.resize-ne { top: 0;    right: 0; width: 8px; height: 8px; cursor: ne-resize; }
+.resize-sw { bottom: 0; left: 0;  width: 8px; height: 8px; cursor: sw-resize; }
+.resize-se { bottom: 0; right: 0; width: 8px; height: 8px; cursor: se-resize; }

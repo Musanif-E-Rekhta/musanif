@@ -1,24 +1,51 @@
 #navbar {
   display: flex;
-  flex-direction: row;
   align-items: center;
-  gap: 24px;
-  padding: 10px 0;
-  border-bottom: 2px solid var(--accent);
+  justify-content: space-between;
+  padding: 0 1.5rem;
+  height: 56px;
+  border-bottom: 1px solid var(--border-light);
+  background: var(--bg-color);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.navbar-brand a {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: var(--primary);
+  text-decoration: none;
+  letter-spacing: -0.01em;
+}
+
+.navbar-brand a:hover {
+  color: var(--primary-hover);
+}
+
+.navbar-links {
+  display: flex;
+  gap: 0.25rem;
+  align-items: center;
 }
 
 #navbar a {
-  color: var(--primary);
+  color: var(--text-muted);
   text-decoration: none;
-  font-weight: 500;
-  font-size: 1.1rem;
-  transition: all 0.2s ease;
-  padding: 8px 12px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  padding: 0.4rem 0.75rem;
   border-radius: 6px;
+  transition: color 0.12s, background 0.12s;
 }
 
 #navbar a:hover {
-  cursor: pointer;
-  color: var(--primary-hover);
-  background-color: var(--accent-light);
+  color: var(--text-main);
+  background: var(--accent-light);
+}
+
+/* active link state (Dioxus router adds aria-current="page") */
+#navbar a[aria-current="page"] {
+  color: var(--primary);
+  background: var(--accent-light);
 }

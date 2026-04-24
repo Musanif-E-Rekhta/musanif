@@ -1,7 +1,11 @@
-//! This crate contains all shared UI for the workspace.
+//! Shared UI library: models, API client, routes, and views.
 
-mod hero;
-pub use hero::Hero;
+pub mod api;
+pub mod models;
+pub mod views;
 
 mod navbar;
-pub use navbar::Navbar;
+mod routes;
+
+pub use navbar::{AppNavbar, Navbar, NAVIGATE_HOME};
+pub use routes::Route;
