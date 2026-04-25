@@ -68,7 +68,7 @@ pub fn AppNavbar() -> Element {
                     span { class: "is-nav-item-count", "12" }
                 }
                 Link {
-                    to: Route::Home {}, // Assuming authors route exists or use home for now
+                    to: Route::Authors {},
                     class: "is-nav-item",
                     svg {
                         class: "is-nav-item-icon",

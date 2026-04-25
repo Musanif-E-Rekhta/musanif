@@ -125,19 +125,14 @@ pub fn BookDetail(slug: String) -> Element {
 
 #[component]
 fn TocRow(chapter: ChapterSummary, book_slug: String) -> Element {
-    let nav = use_navigator();
-    let ch_slug = chapter.slug.clone();
-    let bk_slug = book_slug.clone();
-
     rsx! {
-        div {
+        Link {
             class: "is-toc-row",
-            onclick: move |_| {
-                nav.push(Route::ChapterReader {
-                    book_slug: bk_slug.clone(),
-                    chapter_slug: ch_slug.clone(),
-                });
+            to: Route::ChapterReader {
+                book_slug: book_slug.clone(),
+                chapter_slug: chapter.slug.clone(),
             },
+            style: "text-decoration: none; color: inherit",
 
             span { class: "is-toc-num", "{chapter.number}" }
 

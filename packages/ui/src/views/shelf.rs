@@ -35,7 +35,6 @@ fn ShelfHeader() -> Element {
 #[component]
 pub fn Shelf() -> Element {
     let mut active_status = use_signal(|| "reading".to_string());
-    let nav = use_navigator();
 
     let bookmarks = use_resource(move || {
         let status = active_status();
@@ -89,16 +88,13 @@ pub fn Shelf() -> Element {
                     Some(Some(bms)) => rsx! {
                         div { style: "display: flex; flex-direction: column; gap: 12px",
                             for bm in bms {
-                                div {
-                                    style: "display: flex; gap: 16px; padding: 14px; \
-                                            background: var(--bg-color); border-radius: 12px; \
-                                            align-items: center; cursor: pointer",
-                                    key: "{bm.id}",
-                                    onclick: {
-                                        let slug = bm.book.as_ref().map(|b| b.slug.clone()).unwrap_or_default();
-                                        move |_| { if !slug.is_empty() { nav.push(Route::BookDetail { slug: slug.clone() }); } }
-                                    },
-                                    if let Some(book) = &bm.book {
+                                if let Some(book) = &bm.book {
+                                    Link {
+                                        style: "display: flex; gap: 16px; padding: 14px; \
+                                                background: var(--bg-color); border-radius: 12px; \
+                                                align-items: center; cursor: pointer; text-decoration: none; color: inherit",
+                                        key: "{bm.id}",
+                                        to: Route::BookDetail { slug: book.slug.clone() },
                                         div { class: "is-continue-cover", style: "width: 64px",
                                             div { class: "is-book-cover-art",
                                                 div { class: "is-book-cover-stamp", "{book.title.chars().next().unwrap_or(' ')}" }
@@ -128,7 +124,13 @@ pub fn Shelf() -> Element {
                                                 }
                                             }
                                         }
-                                    } else {
+                                    }
+                                } else {
+                                    div {
+                                        style: "display: flex; gap: 16px; padding: 14px; \
+                                                background: var(--bg-color); border-radius: 12px; \
+                                                align-items: center",
+                                        key: "{bm.id}",
                                         p { style: "font-size: 14px; font-weight: 700; margin: 0", "Book #{bm.book_id}" }
                                     }
                                 }

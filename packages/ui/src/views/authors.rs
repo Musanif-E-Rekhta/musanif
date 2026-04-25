@@ -1,5 +1,7 @@
 use dioxus::prelude::*;
 
+use crate::Route;
+
 #[component]
 pub fn Authors() -> Element {
     let authors = [
@@ -40,7 +42,10 @@ pub fn Authors() -> Element {
             div { class: "is-main-body",
                 div { style: "display: flex; flex-direction: column; gap: 8px",
                     for (name, years, count, m) in authors {
-                        div { class: "island", style: "display: flex; gap: 12px; padding: 14px; align-items: center",
+                        Link {
+                            class: "island",
+                            style: "display: flex; gap: 12px; padding: 14px; align-items: center; text-decoration: none; color: inherit",
+                            to: Route::AuthorDetail { slug: name.to_lowercase().replace(' ', "-") },
                             div { 
                                 style: "width: 42px; height: 42px; border-radius: 50%; \
                                         background: var(--accent-light); color: var(--primary); \

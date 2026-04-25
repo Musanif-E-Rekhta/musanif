@@ -59,7 +59,7 @@ fn MobileTabs() -> Element {
                 "Shelf"
             }
             Link {
-                to: Route::Home {}, // Assuming authors route exists or use home for now
+                to: Route::Authors {},
                 class: "is-mob-tab",
                 active_class: "is-mob-tab--active",
                 svg {
