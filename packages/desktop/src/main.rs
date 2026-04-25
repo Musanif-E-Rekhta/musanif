@@ -10,44 +10,57 @@ fn main() {
     dioxus::LaunchBuilder::desktop().with_cfg(cfg).launch(App);
 }
 
+/// Title bar: full-width drag region with a breadcrumb on the left and window controls on the right.
 #[component]
-fn TitleBar() -> Element {
+fn WindowChrome() -> Element {
+    let page_title = ui::CURRENT_PAGE_TITLE.read();
+
     rsx! {
         div {
-            id: "titlebar",
+            class: "dt-window-chrome",
             onmousedown: move |_| { dioxus::desktop::window().drag(); },
+
+            // Breadcrumb — clicking root navigates home; stop_propagation only on the click, not mousedown
+            div { class: "dt-breadcrumb",
+                span {
+                    class: "dt-breadcrumb-root",
+                    onclick: move |_| { *ui::NAVIGATE_HOME.write() = true; },
+                    "Musanif"
+                }
+                if !page_title.is_empty() {
+                    span { class: "dt-breadcrumb-sep", "›" }
+                    span { class: "dt-breadcrumb-current", "{*page_title}" }
+                }
+            }
+
+            // Window controls — swallow mousedown to prevent drag
             div {
-                class: "titlebar-controls",
-                // Stop propagation so button clicks don't trigger the titlebar drag.
+                class: "dt-controls",
                 onmousedown: move |e| e.stop_propagation(),
                 button {
-                    class: "close",
-                    onclick: move |_| dioxus::desktop::window().close(),
-                    "✕"
+                    class: "dt-control-btn dt-control-btn--min",
+                    onclick: move |_| dioxus::desktop::window().set_minimized(true),
+                    "—"
                 }
                 button {
+                    class: "dt-control-btn dt-control-btn--max",
                     onclick: move |_| {
                         let w = dioxus::desktop::window();
                         w.set_maximized(!w.is_maximized());
                     },
-                    "◻"
+                    "❐"
                 }
                 button {
-                    onclick: move |_| { dioxus::desktop::window().set_minimized(true) },
-                    "‒"
+                    class: "dt-control-btn dt-control-btn--close",
+                    onclick: move |_| dioxus::desktop::window().close(),
+                    "✕"
                 }
-            }
-            div {
-                class: "titlebar-brand",
-                onmousedown: move |e| e.stop_propagation(),
-                onclick: move |_| { *ui::NAVIGATE_HOME.write() = true; },
-                "مصنف"
-                img { class: "titlebar-icon", src: asset!("/assets/musanif.png") }
             }
         }
     }
 }
 
+/// Invisible edge/corner hit-targets for resizing the frameless window.
 #[component]
 fn ResizeHandles() -> Element {
     rsx! {
@@ -80,10 +93,22 @@ fn ResizeHandles() -> Element {
 
 #[component]
 fn App() -> Element {
+    use_effect(move || {
+        let theme_str = ui::CURRENT_THEME().as_str();
+        let _ = document::eval(&format!(
+            "document.documentElement.setAttribute('data-theme', '{theme_str}'); \
+             try {{ localStorage.setItem('musanif-theme', '{theme_str}'); }} catch(e) {{}}"
+        ));
+    });
+
     rsx! {
         document::Link { rel: "stylesheet", href: MAIN_CSS }
         ResizeHandles {}
-        TitleBar {}
-        div { class: "content", Router::<ui::Route> {} }
+        div { class: "dt-window",
+            WindowChrome {}
+            div { class: "dt-window-body",
+                Router::<ui::Route> {}
+            }
+        }
     }
 }

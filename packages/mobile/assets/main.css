@@ -1,19 +1,219 @@
-:root {
-  --bg-color: #f7f3ec;
-  --text-main: #2b2524;
-  --text-muted: #5e524f;
-  --primary: #c24a3b;
-  --primary-hover: #a83d30;
-  --accent: #e0adb0;
-  --accent-light: #f1d6d8;
+/* ═══════════════════════════════════════════════════════════════
+   Musanif — Mobile UI Design System
+   ═══════════════════════════════════════════════════════════════ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Nastaliq+Urdu:wght@400;700&family=Crimson+Pro:wght@400;600;700&display=swap');
+
+:root, [data-theme="parchment"] {
+  --bg-color: #f7f3ec; --bg-card: #ffffff;
+  --text-main: #2b2524; --text-muted: #5e524f;
+  --primary: #c24a3b; --primary-hover: #a83d30;
+  --accent: #e0adb0; --accent-light: #f1d6d8;
   --border-light: #e5dac9;
+  --shadow-card-hover: 0 6px 20px rgba(0,0,0,.09);
+  --shadow-cover: 0 4px 16px rgba(0,0,0,.12);
+  --shadow-thumb: 0 2px 8px rgba(0,0,0,.10);
+  --rating-bg: #fef3c7; --rating-text: #92400e;
+  --category-bg: #e0f2fe; --category-text: #0369a1;
+  --font-urdu: 'Noto Nastaliq Urdu', serif;
 }
 
+[data-theme="midnight"] {
+  --bg-color: #14171c; --bg-card: #1d2128;
+  --text-main: #e8e6e2; --text-muted: #9aa0a8;
+  --primary: #e87060; --primary-hover: #f4897a;
+  --accent: #4a3633; --accent-light: #2a2120;
+  --border-light: #2c313a;
+  --shadow-card-hover: 0 6px 20px rgba(0,0,0,.5);
+  --shadow-cover: 0 4px 16px rgba(0,0,0,.55);
+  --shadow-thumb: 0 2px 8px rgba(0,0,0,.45);
+  --rating-bg: #3a2d10; --rating-text: #f3c969;
+  --category-bg: #0f2c44; --category-text: #7cc7f5;
+}
+
+[data-theme="sepia-dark"] {
+  --bg-color: #1f1813; --bg-card: #2a201a;
+  --text-main: #efe5d6; --text-muted: #a8978a;
+  --primary: #e8826f; --primary-hover: #f29885;
+  --accent: #4d342f; --accent-light: #2f211c;
+  --border-light: #3a2d24;
+  --shadow-card-hover: 0 6px 20px rgba(0,0,0,.55);
+  --shadow-cover: 0 4px 16px rgba(0,0,0,.6);
+  --shadow-thumb: 0 2px 8px rgba(0,0,0,.5);
+  --rating-bg: #3a2810; --rating-text: #f0c074;
+  --category-bg: #1a3140; --category-text: #82b8d8;
+}
+
+[data-theme="ink"] {
+  --bg-color: #000000; --bg-card: #0d0d0e;
+  --text-main: #f0eeea; --text-muted: #8a8682;
+  --primary: #ed7561; --primary-hover: #f78a77;
+  --accent: #3a2825; --accent-light: #1a1413;
+  --border-light: #1f1d1c;
+  --shadow-card-hover: 0 6px 20px rgba(255,100,80,.08);
+  --shadow-cover: 0 4px 16px rgba(0,0,0,.8);
+  --shadow-thumb: 0 2px 8px rgba(0,0,0,.7);
+  --rating-bg: #2a1f08; --rating-text: #f5cd72;
+  --category-bg: #0a2230; --category-text: #6db8e0;
+}
+
+* { box-sizing: border-box; }
+
 body {
-    background-color: var(--bg-color);
-    color: var(--text-main);
-    font-family: 'Inter', 'Outfit', 'Segoe UI', Tahoma, sans-serif;
-    margin: 0;
-    padding: 20px;
-    transition: background-color 0.3s ease, color 0.3s ease;
+  margin: 0;
+  padding: 0;
+  background-color: var(--bg-color);
+  color: var(--text-main);
+  font-family: 'Inter', sans-serif;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  min-height: 100vh;
+}
+
+/* ── MOBILE SHELL ─────────────────────────────────────────────── */
+
+.is-mob {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100%;
+  background: var(--bg-color);
+  color: var(--text-main);
+  position: relative;
+  overflow: hidden;
+}
+
+.is-mob-statusbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 24px 8px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.is-mob-statusbar-icons {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.is-mob-header {
+  padding: 12px 24px 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.is-mob-greet {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-muted);
+  margin: 0 0 2px;
+}
+
+.is-mob-title {
+  font-size: 28px;
+  font-weight: 800;
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+.is-mob-search {
+  margin: 0 24px 16px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-light);
+  border-radius: 12px;
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 1px 3px rgba(0,0,0,.04);
+}
+
+.is-mob-search input {
+  background: transparent;
+  border: none;
+  font-family: inherit;
+  font-size: 14px;
+  color: var(--text-main);
+  width: 100%;
+  outline: none;
+}
+
+.is-mob-search input::placeholder {
+  color: var(--text-muted);
+}
+
+.is-mob-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 20px 100px;
+}
+
+/* ── ISLANDS (Mobile version) ─────────────────────────────────── */
+
+.island {
+  background: var(--bg-card);
+  border-radius: 16px;
+  border: 1px solid var(--border-light);
+  box-shadow: 0 1px 3px rgba(0,0,0,.04);
+  overflow: hidden;
+}
+
+/* ── BOTTOM TABS ──────────────────────────────────────────────── */
+
+.is-mob-tabs {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 84px;
+  background: var(--bg-card);
+  border-top: 1px solid var(--border-light);
+  display: flex;
+  justify-content: space-around;
+  padding: 8px 10px 24px;
+  z-index: 100;
+}
+
+.is-mob-tab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  flex: 1;
+  transition: color 0.15s;
+  text-decoration: none;
+}
+
+.is-mob-tab--active, .is-mob-tab[aria-current="page"] {
+  color: var(--primary);
+}
+
+.is-mob-tab-icon {
+  width: 22px;
+  height: 22px;
+}
+
+/* ── UTILITIES ────────────────────────────────────────────────── */
+
+.is-icon-btn {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-card);
+  border: 1px solid var(--border-light);
+  color: var(--text-main);
+  cursor: pointer;
 }

@@ -1,8 +1,6 @@
 use dioxus::prelude::*;
 
-use crate::{api, models::ChapterSummary, Route};
-
-const BOOK_CSS: Asset = asset!("/assets/styling/book.css");
+use crate::{api, components::Cover, models::ChapterSummary, Route};
 
 #[component]
 pub fn BookDetail(slug: String) -> Element {
@@ -19,121 +17,138 @@ pub fn BookDetail(slug: String) -> Element {
     });
 
     rsx! {
-        document::Link { rel: "stylesheet", href: BOOK_CSS }
-
         match &*book.read() {
-            None => rsx! { div { class: "state-loading", "Loading…" } },
-            Some(None) => rsx! { div { class: "state-error", "Book not found." } },
+            None => rsx! {
+                div { class: "island is-main",
+                    div { class: "state-loading", "Loading…" }
+                }
+            },
+            Some(None) => rsx! {
+                div { class: "island is-main",
+                    div { class: "state-error", "Book not found." }
+                }
+            },
             Some(Some(book)) => rsx! {
-                div { class: "book-detail",
-                    // ── hero ──────────────────────────────────────────────────
-                    div { class: "book-hero",
-                        div { class: "book-cover",
-                            if let Some(url) = &book.cover_url {
-                                img { src: "{url}", alt: "{book.title}" }
-                            } else {
-                                div { class: "book-cover-placeholder",
-                                    span { "{book.title}" }
-                                }
-                            }
+                div { class: "island is-main",
+                    div { class: "is-main-header",
+                        button { class: "is-btn is-btn--ghost",
+                            onclick: move |_| {},
+                            "← Discover"
                         }
-
-                        div { class: "book-info",
-                            h1 { class: "book-info-title", "{book.title}" }
-
-                            if let Some(authors) = &book.authors {
-                                div { class: "book-info-authors",
-                                    for ba in authors {
-                                        Link {
-                                            class: "author-link",
-                                            to: Route::AuthorDetail { slug: ba.author.slug.clone() },
-                                            "{ba.author.name}"
-                                        }
-                                        if ba.role != "author" {
-                                            span { class: "author-role", " ({ba.role})" }
-                                        }
-                                    }
-                                }
-                            }
-
-                            div { class: "book-info-meta",
-                                if let Some(rating) = book.avg_rating {
-                                    div { class: "meta-item",
-                                        span { class: "meta-label", "Rating" }
-                                        span { class: "meta-value rating-stars",
-                                            "★ {rating:.1}"
-                                            span { class: "meta-sub", " ({book.review_count} reviews)" }
-                                        }
-                                    }
-                                }
-                                div { class: "meta-item",
-                                    span { class: "meta-label", "Chapters" }
-                                    span { class: "meta-value", "{book.chapter_count}" }
-                                }
-                                if let Some(pages) = book.page_count {
-                                    div { class: "meta-item",
-                                        span { class: "meta-label", "Pages" }
-                                        span { class: "meta-value", "{pages}" }
-                                    }
-                                }
-                                div { class: "meta-item",
-                                    span { class: "meta-label", "Language" }
-                                    span { class: "meta-value", "{book.language.to_uppercase()}" }
-                                }
-                            }
-
-                            if let Some(cats) = &book.categories {
-                                if !cats.is_empty() {
-                                    div { class: "book-tags",
-                                        for cat in cats {
-                                            span { class: "tag tag-category", "{cat.name}" }
-                                        }
-                                    }
-                                }
-                            }
-
-                            if let Some(tags) = &book.tags {
-                                if !tags.is_empty() {
-                                    div { class: "book-tags",
-                                        for tag in tags {
-                                            span { class: "tag", "#{tag.name}" }
-                                        }
-                                    }
-                                }
-                            }
+                        span { class: "is-main-subtitle", "Poetry · Classical" }
+                        div { class: "is-main-actions",
+                            button { class: "is-btn", "Add to Shelf" }
+                            button { class: "is-btn", "Share" }
                         }
                     }
 
-                    // ── description ───────────────────────────────────────────
-                    if let Some(desc) = &book.description {
-                        section { class: "book-section",
-                            h2 { class: "section-title", "About" }
-                            p { class: "book-description", "{desc}" }
-                        }
-                    }
+                    div { class: "is-main-body",
+                        div { class: "is-detail",
+                            // Left column: cover + actions
+                            div {
+                                div { class: "is-detail-cover",
+                                    Cover {
+                                        urdu: Some(book.title.clone()),
+                                        mono: Some(book.title.chars().next().unwrap_or('م').to_string()),
+                                        big: true,
+                                    }
+                                }
+                                div { style: "display: flex; flex-direction: column; gap: 6px; margin-top: 14px",
+                                    button { class: "is-btn is-btn--primary", style: "justify-content: center",
+                                        "Start reading"
+                                    }
+                                    button { class: "is-btn", style: "justify-content: center",
+                                        "Add to shelf"
+                                    }
+                                }
+                            }
 
-                    // ── table of contents ─────────────────────────────────────
-                    section { class: "book-section",
-                        h2 { class: "section-title", "Chapters" }
-                        match &*chapters.read() {
-                            None => rsx! { div { class: "state-loading", "Loading chapters…" } },
-                            Some(None) => rsx! {
-                                p { class: "state-empty", "No chapters yet." }
-                            },
-                            Some(Some(chs)) if chs.is_empty() => rsx! {
-                                p { class: "state-empty", "No chapters yet." }
-                            },
-                            Some(Some(chs)) => rsx! {
-                                ol { class: "toc",
-                                    for ch in chs {
-                                        TocRow {
-                                            key: "{ch.id}",
-                                            chapter: ch.clone(),
-                                            book_slug: book.slug.clone(),
+                            // Right column: info + TOC
+                            div {
+                                span { class: "is-chip", "Urdu" }
+                                if let Some(categories) = &book.categories {
+                                    for cat in categories.iter().take(2) {
+                                        span { class: "is-chip", style: "margin-left: 4px", "{cat.name}" }
+                                    }
+                                }
+
+                                h1 { class: "is-detail-h1", style: "margin-top: 10px", "{book.title}" }
+
+                                p { class: "is-detail-author",
+                                    if let Some(authors) = &book.authors {
+                                        for (i, ba) in authors.iter().enumerate() {
+                                            if i > 0 { ", " }
+                                            Link {
+                                                to: Route::AuthorDetail { slug: ba.author.slug.clone() },
+                                                class: "is-link",
+                                                "{ba.author.name}"
+                                            }
+                                        }
+                                    } else {
+                                        "Unknown Author"
+                                    }
+                                }
+
+                                div { class: "is-detail-stats",
+                                    div {
+                                        div { class: "is-detail-stat-label", "Rating" }
+                                        div { class: "is-detail-stat-value",
+                                            if let Some(r) = book.avg_rating {
+                                                "★ {r:.1}"
+                                            } else {
+                                                "N/A"
+                                            }
+                                        }
+                                    }
+                                    div {
+                                        div { class: "is-detail-stat-label", "Chapters" }
+                                        div { class: "is-detail-stat-value", "{book.chapter_count}" }
+                                    }
+                                    if let Some(pages) = book.page_count {
+                                        div {
+                                            div { class: "is-detail-stat-label", "Pages" }
+                                            div { class: "is-detail-stat-value", "{pages}" }
                                         }
                                     }
                                 }
-                            },
+
+                                p { class: "is-detail-blurb",
+                                    if let Some(desc) = &book.description {
+                                        "{desc}"
+                                    } else {
+                                        "No description available for this work."
+                                    }
+                                }
+
+                                if let Some(tags) = &book.tags {
+                                    div { style: "display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px",
+                                        for tag in tags.iter().take(5) {
+                                            span { class: "is-chip", "{tag.name}" }
+                                        }
+                                    }
+                                }
+
+                                div { class: "is-toc-title", "Table of Contents" }
+
+                                match &*chapters.read() {
+                                    None => rsx! { div { class: "state-loading", "Loading chapters…" } },
+                                    Some(None) => rsx! { p { class: "state-empty", "No chapters yet." } },
+                                    Some(Some(chs)) if chs.is_empty() => rsx! {
+                                        p { class: "state-empty", "No chapters yet." }
+                                    },
+                                    Some(Some(chs)) => rsx! {
+                                        div {
+                                            for ch in chs {
+                                                TocRow {
+                                                    key: "{ch.id}",
+                                                    chapter: ch.clone(),
+                                                    book_slug: book.slug.clone(),
+                                                }
+                                            }
+                                        }
+                                    },
+                                }
+                            }
                         }
                     }
                 }
@@ -144,37 +159,23 @@ pub fn BookDetail(slug: String) -> Element {
 
 #[component]
 fn TocRow(chapter: ChapterSummary, book_slug: String) -> Element {
-    let nav = use_navigator();
-    let ch_slug = chapter.slug.clone();
-    let bk_slug = book_slug.clone();
-
     rsx! {
-        li {
-            class: "toc-row",
-            onclick: move |_| {
-                nav.push(Route::ChapterReader {
-                    book_slug: bk_slug.clone(),
-                    chapter_slug: ch_slug.clone(),
-                });
+        Link {
+            class: "is-toc-row",
+            to: Route::ChapterReader {
+                book_slug: book_slug.clone(),
+                chapter_slug: chapter.slug.clone(),
             },
-
-            span { class: "toc-number", "{chapter.number}" }
-
-            span { class: "toc-title",
+            span { class: "is-toc-num", "{chapter.number:02}" }
+            span { class: "is-toc-name",
                 if let Some(title) = &chapter.title {
                     "{title}"
                 } else {
                     "Chapter {chapter.number}"
                 }
             }
-
-            div { class: "toc-meta",
-                if let Some(mins) = chapter.reading_time_mins {
-                    span { class: "toc-time", "{mins} min" }
-                }
-                if let Some(rating) = chapter.avg_rating {
-                    span { class: "toc-rating", "★ {rating:.1}" }
-                }
+            if let Some(mins) = chapter.reading_time_mins {
+                span { class: "is-toc-time", "{mins} min" }
             }
         }
     }

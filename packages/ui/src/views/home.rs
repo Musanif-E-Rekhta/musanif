@@ -1,68 +1,82 @@
 use dioxus::prelude::*;
+use dioxus_free_icons::{
+    icons::ld_icons::{LdBookOpen, LdBookmark, LdSearch},
+    Icon,
+};
 
-use crate::{api, models::Book, Route};
-
-const HOME_CSS: Asset = asset!("/assets/styling/home.css");
+use crate::{api, components::Cover, models::Book, Route};
 
 #[component]
 pub fn Home() -> Element {
-    let mut input = use_signal(String::new);
-    let mut search_term = use_signal(String::new);
-
-    let books = use_resource(move || {
-        let q = search_term();
-        async move { api::fetch_books(if q.is_empty() { None } else { Some(q) }, None).await }
-    });
+    let books = use_resource(move || async move { api::fetch_books(None, None).await });
 
     rsx! {
-        document::Link { rel: "stylesheet", href: HOME_CSS }
-
-        div { class: "home",
-            header { class: "home-header",
-                h1 { class: "home-title", "مصنف" }
-                p { class: "home-subtitle", "Discover and read great Urdu literature" }
-
-                div { class: "search-bar",
-                    input {
-                        class: "search-input",
-                        r#type: "text",
-                        placeholder: "Search books or authors…",
-                        value: "{input}",
-                        oninput: move |e| input.set(e.value()),
-                        onkeydown: move |e| {
-                            if e.key() == Key::Enter {
-                                search_term.set(input());
-                            }
-                        },
-                    }
-                    button {
-                        class: "search-btn",
-                        onclick: move |_| search_term.set(input()),
-                        "Search"
+        div { class: "island is-main",
+            div { class: "is-main-header",
+                h2 { class: "is-main-title", "Discover" }
+                span { class: "is-main-subtitle", "Urdu literature, curated" }
+                div { class: "is-main-actions",
+                    div { class: "is-search",
+                        Icon { icon: LdSearch, width: 14, height: 14, class: "is-search-icon" }
+                        input { placeholder: "Search books, authors, ghazals…" }
                     }
                 }
             }
 
-            match &*books.read() {
-                None => rsx! {
-                    div { class: "state-loading", "Loading books…" }
-                },
-                Some(None) => rsx! {
-                    div { class: "state-error",
-                        p { "Could not reach the server." }
-                        p { class: "state-error-hint", "Make sure the backend is running on " code { "localhost:3000" } }
+            div { class: "is-main-body",
+                // Editor's Pick — featured card
+                div { class: "is-feature",
+                    div { class: "is-feature-cover",
+                        Cover { urdu: "غالب", mono: "غ", big: true }
                     }
-                },
-                Some(Some(books)) if books.is_empty() => rsx! {
-                    div { class: "state-empty", "No books found." }
-                },
-                Some(Some(books)) => rsx! {
-                    div { class: "book-grid",
-                        for book in books {
-                            BookCard { key: "{book.id}", book: book.clone() }
+                    div {
+                        div { class: "is-feature-eyebrow", "Editor's Pick · This Week" }
+                        h3 { class: "is-feature-title", "The wine-poems of Ghalib, freshly annotated" }
+                        p { class: "is-feature-blurb",
+                            "A new chapter-arrangement of the Diwan, opening with the rindana ghazals \
+                            — the wine and waste poems where Ghalib's voice is most himself."
+                        }
+                        div { class: "is-feature-actions",
+                            button { class: "is-btn is-btn--primary",
+                                Icon { icon: LdBookOpen, width: 14, height: 14 }
+                                "Start reading"
+                            }
+                            button { class: "is-btn",
+                                Icon { icon: LdBookmark, width: 14, height: 14 }
+                                "Save"
+                            }
                         }
                     }
-                },
+                }
+
+                // Recently Added header
+                div { style: "display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 14px",
+                    h3 { style: "font-size: 14px; font-weight: 700; margin: 0; letter-spacing: -0.005em", "Recently Added" }
+                    button { class: "is-btn is-btn--ghost", "View all" }
+                }
+
+                match &*books.read() {
+                    None => rsx! { div { class: "state-loading", "Loading books…" } },
+                    Some(None) => rsx! {
+                        div { class: "state-error",
+                            p { "Could not reach the server." }
+                            p { class: "state-error-hint",
+                                "Make sure the backend is running on "
+                                code { "localhost:9678" }
+                            }
+                        }
+                    },
+                    Some(Some(books)) if books.is_empty() => rsx! {
+                        div { class: "state-empty", "No books found." }
+                    },
+                    Some(Some(books)) => rsx! {
+                        div { class: "is-grid",
+                            for book in books {
+                                BookCard { key: "{book.id}", book: book.clone() }
+                            }
+                        }
+                    },
+                }
             }
         }
     }
@@ -70,9 +84,6 @@ pub fn Home() -> Element {
 
 #[component]
 fn BookCard(book: Book) -> Element {
-    let slug = book.slug.clone();
-    let nav = use_navigator();
-
     let author_names = book
         .authors
         .as_deref()
@@ -82,39 +93,29 @@ fn BookCard(book: Book) -> Element {
         .collect::<Vec<_>>()
         .join(", ");
 
-    rsx! {
-        div {
-            class: "book-card",
-            onclick: move |_| { nav.push(Route::BookDetail { slug: slug.clone() }); },
+    let first_char = book.title.chars().next().unwrap_or('م').to_string();
 
-            div { class: "book-card-cover",
-                if let Some(url) = &book.cover_url {
-                    img { src: "{url}", alt: "{book.title}" }
-                } else {
-                    div { class: "book-card-cover-placeholder",
-                        span { "{book.title}" }
-                    }
+    rsx! {
+        Link {
+            class: "is-book",
+            to: Route::BookDetail { slug: book.slug.clone() },
+
+            div { class: "is-book-cover",
+                Cover {
+                    title: Some(book.title.clone()),
+                    urdu: Some(book.title.clone()),
+                    mono: Some(first_char),
                 }
             }
 
-            div { class: "book-card-body",
-                h3 { class: "book-card-title", "{book.title}" }
+            p { class: "is-book-meta", "{book.title}" }
 
-                if !author_names.is_empty() {
-                    p { class: "book-card-authors", "{author_names}" }
-                }
+            if !author_names.is_empty() {
+                p { class: "is-book-author", "{author_names}" }
+            }
 
-                div { class: "book-card-meta",
-                    if let Some(rating) = book.avg_rating {
-                        span { class: "badge badge-rating", "★ {rating:.1}" }
-                    }
-                    span { class: "badge", "{book.chapter_count} chapters" }
-                    span { class: "badge", "{book.language.to_uppercase()}" }
-                }
-
-                if let Some(summary) = &book.summary {
-                    p { class: "book-card-summary", "{summary}" }
-                }
+            if let Some(rating) = book.avg_rating {
+                span { class: "is-rating", "★ {rating:.1}" }
             }
         }
     }

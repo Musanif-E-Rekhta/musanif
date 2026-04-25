@@ -18,50 +18,50 @@ pub fn AuthorDetail(slug: String) -> Element {
 
     rsx! {
         match &*author.read() {
-            None => rsx! { div { class: "state-loading", "Loading…" } },
-            Some(None) => rsx! { div { class: "state-error", "Author not found." } },
+            None => rsx! { div { class: "island is-main", div { class: "state-loading", "Loading…" } } },
+            Some(None) => rsx! { div { class: "island is-main", div { class: "state-error", "Author not found." } } },
             Some(Some(author)) => rsx! {
-                div { class: "author-detail",
-                    div { class: "author-hero",
-                        if let Some(avatar) = &author.avatar_url {
-                            img { class: "author-avatar", src: "{avatar}", alt: "{author.name}" }
-                        } else {
-                            div { class: "author-avatar-placeholder",
-                                span { "{author.name.chars().next().unwrap_or('?')}" }
-                            }
-                        }
-
-                        div { class: "author-info",
-                            h1 { class: "author-name", "{author.name}" }
-                            div { class: "author-meta",
-                                span { class: "badge", "{author.followers} followers" }
-                                if let Some(site) = &author.website {
-                                    a { class: "author-website", href: "{site}", target: "_blank", "Website ↗" }
-                                }
-                            }
-                            if let Some(bio) = &author.bio {
-                                p { class: "author-bio", "{bio}" }
-                            }
-                        }
+                div { class: "island is-main",
+                    div { class: "is-main-header",
+                        h2 { class: "is-main-title", "{author.name}" }
+                        span { class: "is-main-subtitle", "{author.followers} followers" }
                     }
 
-                    section { class: "book-section",
-                        h2 { class: "section-title", "Books" }
-                        match &*books.read() {
-                            None => rsx! { div { class: "state-loading", "Loading books…" } },
-                            Some(None) => rsx! {
-                                p { class: "state-empty", "No books found." }
-                            },
-                            Some(Some(bks)) if bks.is_empty() => rsx! {
-                                p { class: "state-empty", "No books found." }
-                            },
-                            Some(Some(bks)) => rsx! {
-                                div { class: "book-grid book-grid--compact",
+                    div { class: "is-main-body",
+                        div {
+                            style: "display: flex; gap: 14px; padding: 14px; \
+                                    background: var(--bg-color); border-radius: 12px; \
+                                    align-items: center; margin-bottom: 24px",
+                            div {
+                                style: "width: 48px; height: 48px; border-radius: 50%; \
+                                        background: var(--accent-light); color: var(--primary); \
+                                        display: flex; align-items: center; justify-content: center; \
+                                        font-family: var(--font-urdu); fontSize: 20px; fontWeight: 700; flex-shrink: 0",
+                                "{author.name.chars().next().unwrap_or(' ')}"
+                            }
+                            div {
+                                p { style: "font-size: 14px; font-weight: 700; margin: 0 0 2px", "{author.name}" }
+                                if let Some(bio) = &author.bio {
+                                    p { style: "font-size: 11px; color: var(--text-muted); margin: 0", "{bio}" }
+                                }
+                            }
+                        }
+
+                        div { class: "is-grid",
+                            match &*books.read() {
+                                None => rsx! { div { class: "state-loading", "Loading books…" } },
+                                Some(None) => rsx! {
+                                    p { class: "state-empty", "No books found." }
+                                },
+                                Some(Some(bks)) if bks.is_empty() => rsx! {
+                                    p { class: "state-empty", "No books found." }
+                                },
+                                Some(Some(bks)) => rsx! {
                                     for book in bks {
                                         AuthorBookCard { key: "{book.id}", book: book.clone() }
                                     }
-                                }
-                            },
+                                },
+                            }
                         }
                     }
                 }
@@ -74,23 +74,22 @@ pub fn AuthorDetail(slug: String) -> Element {
 fn AuthorBookCard(book: Book) -> Element {
     rsx! {
         Link {
-            class: "author-book-card",
+            class: "is-book",
             to: Route::BookDetail { slug: book.slug.clone() },
 
-            div { class: "book-card-cover",
-                if let Some(url) = &book.cover_url {
-                    img { src: "{url}", alt: "{book.title}" }
-                } else {
-                    div { class: "book-card-cover-placeholder",
-                        span { "{book.title}" }
-                    }
+            div { class: "is-book-cover",
+                div { class: "is-book-cover-art",
+                    div { class: "is-book-cover-stamp", "{book.title.chars().next().unwrap_or(' ')}" }
+                    div {}
+                    div { class: "is-book-cover-title", "{book.title}" }
                 }
             }
-            div { class: "author-book-card-body",
-                p { class: "author-book-title", "{book.title}" }
+            p { class: "is-book-meta", "{book.title}" }
+            div { class: "is-book-meta",
                 if let Some(rating) = book.avg_rating {
-                    span { class: "badge badge-rating", "★ {rating:.1}" }
+                    span { class: "is-rating", "★ {rating:.1}" }
                 }
+                span { "{book.chapter_count} ch" }
             }
         }
     }

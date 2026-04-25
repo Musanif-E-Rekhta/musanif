@@ -9,6 +9,13 @@ fn main() {
 
 #[component]
 fn App() -> Element {
+    use_effect(move || {
+        let theme = ui::CURRENT_THEME().as_str();
+        let _ = document::eval(&format!(
+            "document.documentElement.setAttribute('data-theme', '{theme}');"
+        ));
+    });
+
     rsx! {
         document::Title { "Musanif" }
         document::Link { rel: "icon", href: FAVICON }
