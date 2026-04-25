@@ -80,10 +80,21 @@ fn ResizeHandles() -> Element {
 
 #[component]
 fn App() -> Element {
+    use_effect(move || {
+        let theme_str = ui::CURRENT_THEME().as_str();
+        document::eval(&format!(
+            "document.documentElement.setAttribute('data-theme', '{}')",
+            theme_str
+        ));
+    });
+
     rsx! {
         document::Link { rel: "stylesheet", href: MAIN_CSS }
         ResizeHandles {}
-        TitleBar {}
-        div { class: "content", Router::<ui::Route> {} }
+        ui::components::DesktopWindow {
+            tabs: vec!["Discover".to_string(), "Bang-e-Dara · Ch. 14".to_string(), "Aag Ka Darya".to_string()],
+            active_tab: 0,
+            Router::<ui::Route> {}
+        }
     }
 }

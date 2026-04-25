@@ -12,8 +12,30 @@ const STATUSES: &[(&str, &str)] = &[
 ];
 
 #[component]
+fn ShelfHeader() -> Element {
+    if cfg!(feature = "mobile") {
+        rsx! {
+            div { class: "is-mob-header",
+                div {
+                    p { class: "is-mob-greet", "My Collection" }
+                    h1 { class: "is-mob-title", "Shelf" }
+                }
+            }
+        }
+    } else {
+        rsx! {
+            div { class: "is-main-header",
+                h2 { class: "is-main-title", "My Shelf" }
+                span { class: "is-main-subtitle", "12 books · 3 in progress" }
+            }
+        }
+    }
+}
+
+#[component]
 pub fn Shelf() -> Element {
     let mut active_status = use_signal(|| "reading".to_string());
+    let nav = use_navigator();
 
     let bookmarks = use_resource(move || {
         let status = active_status();
@@ -23,66 +45,80 @@ pub fn Shelf() -> Element {
     rsx! {
         document::Link { rel: "stylesheet", href: SHELF_CSS }
 
-        div { class: "shelf",
-            header { class: "shelf-header",
-                h1 { "My Shelf" }
-            }
+        div { class: "is-main",
+            ShelfHeader {}
 
-            // ── status tabs ───────────────────────────────────────────────────
-            div { class: "shelf-tabs",
-                for (value, label) in STATUSES {
-                    button {
-                        class: if active_status() == *value { "shelf-tab shelf-tab--active" } else { "shelf-tab" },
-                        onclick: {
-                            let value = value.to_string();
-                            move |_| active_status.set(value.clone())
-                        },
-                        "{label}"
+            div { class: "is-main-body",
+                // ── status tabs ───────────────────────────────────────────────────
+                div { 
+                    style: "display: flex; gap: 4px; margin-bottom: 18px; border-bottom: 1px solid var(--border-light)",
+                    for (value, label) in STATUSES {
+                        button {
+                            style: format_args!(
+                                "padding: 10px 14px; border: none; background: none; \
+                                 font-family: inherit; font-size: 13px; font-weight: 600; \
+                                 cursor: pointer; color: {}; \
+                                 border-bottom: 2px solid {}; \
+                                 margin-bottom: -1px",
+                                if active_status() == *value { "var(--primary)" } else { "var(--text-muted)" },
+                                if active_status() == *value { "var(--primary)" } else { "transparent" }
+                            ),
+                            onclick: {
+                                let value = value.to_string();
+                                move |_| active_status.set(value.clone())
+                            },
+                            "{label}"
+                        }
                     }
                 }
-            }
 
-            // ── book list ─────────────────────────────────────────────────────
-            match &*bookmarks.read() {
-                None => rsx! { div { class: "state-loading", "Loading…" } },
-                Some(None) => rsx! {
-                    div { class: "state-error",
-                        "Could not load bookmarks. Make sure you are signed in."
-                    }
-                },
-                Some(Some(bms)) if bms.is_empty() => rsx! {
-                    div { class: "state-empty",
-                        p { "Nothing here yet." }
-                        Link { to: Route::Home {}, class: "btn-link", "Discover books →" }
-                    }
-                },
-                Some(Some(bms)) => rsx! {
-                    div { class: "shelf-list",
-                        for bm in bms {
-                            div { class: "shelf-item", key: "{bm.id}",
-                                if let Some(book) = &bm.book {
-                                    div { class: "shelf-item-cover",
-                                        if let Some(url) = &book.cover_url {
-                                            img { src: "{url}", alt: "{book.title}" }
-                                        } else {
-                                            div { class: "shelf-cover-placeholder",
-                                                span { "{book.title}" }
+                // ── book list ─────────────────────────────────────────────────────
+                match &*bookmarks.read() {
+                    None => rsx! { div { class: "state-loading", "Loading…" } },
+                    Some(None) => rsx! {
+                        div { class: "state-error",
+                            "Could not load bookmarks. Make sure you are signed in."
+                        }
+                    },
+                    Some(Some(bms)) if bms.is_empty() => rsx! {
+                        div { class: "state-empty",
+                            p { "Nothing here yet." }
+                            Link { to: Route::Home {}, class: "btn-link", "Discover books →" }
+                        }
+                    },
+                    Some(Some(bms)) => rsx! {
+                        div { style: "display: flex; flex-direction: column; gap: 12px",
+                            for bm in bms {
+                                div {
+                                    style: "display: flex; gap: 16px; padding: 14px; \
+                                            background: var(--bg-color); border-radius: 12px; \
+                                            align-items: center; cursor: pointer",
+                                    key: "{bm.id}",
+                                    onclick: {
+                                        let slug = bm.book.as_ref().map(|b| b.slug.clone()).unwrap_or_default();
+                                        move |_| { if !slug.is_empty() { nav.push(Route::BookDetail { slug: slug.clone() }); } }
+                                    },
+                                    if let Some(book) = &bm.book {
+                                        div { class: "is-continue-cover", style: "width: 64px",
+                                            div { class: "is-book-cover-art",
+                                                div { class: "is-book-cover-stamp", "{book.title.chars().next().unwrap_or(' ')}" }
+                                                div {}
+                                                div { class: "is-book-cover-title", "{book.title}" }
                                             }
                                         }
-                                    }
-                                    div { class: "shelf-item-info",
-                                        h3 {
-                                            class: "shelf-item-title",
-                                            Link {
-                                                to: Route::BookDetail { slug: book.slug.clone() },
-                                                "{book.title}"
+                                        div { style: "flex: 1",
+                                            p { style: "font-size: 14px; font-weight: 700; margin: 0 0 2px", "{book.title}" }
+                                            p { style: "font-size: 12px; color: var(--text-muted); margin: 0 0 8px",
+                                                {
+                                                    book.authors.as_ref()
+                                                        .map(|authors| authors.iter().map(|a| a.author.name.as_str()).collect::<Vec<_>>().join(", "))
+                                                        .unwrap_or_default()
+                                                }
                                             }
-                                        }
-                                        if let Some(progress) = bm.progress {
-                                            div { class: "shelf-progress",
-                                                div { class: "shelf-progress-bar",
+                                            if let Some(progress) = bm.progress {
+                                                div { class: "is-progress", style: "height: 4px",
                                                     div {
-                                                        class: "shelf-progress-fill",
+                                                        class: "is-progress-fill",
                                                         style: if let Some(pages) = book.page_count {
                                                             format!("width: {}%", (progress as f64 / pages as f64 * 100.0).min(100.0))
                                                         } else {
@@ -90,25 +126,16 @@ pub fn Shelf() -> Element {
                                                         },
                                                     }
                                                 }
-                                                span { class: "shelf-progress-label",
-                                                    "p. {progress}"
-                                                    if let Some(pages) = book.page_count {
-                                                        " / {pages}"
-                                                    }
-                                                }
                                             }
                                         }
-                                        if let Some(notes) = &bm.notes {
-                                            p { class: "shelf-notes", "{notes}" }
-                                        }
+                                    } else {
+                                        p { style: "font-size: 14px; font-weight: 700; margin: 0", "Book #{bm.book_id}" }
                                     }
-                                } else {
-                                    p { class: "shelf-item-title", "Book #{bm.book_id}" }
                                 }
                             }
                         }
-                    }
-                },
+                    },
+                }
             }
         }
     }

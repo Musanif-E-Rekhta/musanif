@@ -1,85 +1,155 @@
-:root {
-    --bg-color: #f7f3ec;
-    --text-main: #2b2524;
-    --text-muted: #5e524f;
-    --primary: #c24a3b;
-    --primary-hover: #a83d30;
-    --accent: #e0adb0;
-    --accent-light: #f1d6d8;
-    --border-light: #e5dac9;
+:root, [data-theme="parchment"] {
+  --bg-color: #f7f3ec; --bg-card: #ffffff;
+  --text-main: #2b2524; --text-muted: #5e524f;
+  --primary: #c24a3b; --primary-hover: #a83d30;
+  --accent: #e0adb0; --accent-light: #f1d6d8;
+  --border-light: #e5dac9;
+  --shadow-card-hover: 0 6px 20px rgba(0,0,0,.09);
+  --shadow-cover: 0 4px 16px rgba(0,0,0,.12);
+  --shadow-thumb: 0 2px 8px rgba(0,0,0,.10);
+  --rating-bg: #fef3c7; --rating-text: #92400e;
+  --category-bg: #e0f2fe; --category-text: #0369a1;
+  --font-urdu: 'Noto Nastaliq Urdu', 'Jameel Noori Nastaleeq', serif;
+}
+
+[data-theme="midnight"] {
+  --bg-color: #14171c; --bg-card: #1d2128;
+  --text-main: #e8e6e2; --text-muted: #9aa0a8;
+  --primary: #e87060; --primary-hover: #f4897a;
+  --accent: #4a3633; --accent-light: #2a2120;
+  --border-light: #2c313a;
+  --shadow-card-hover: 0 6px 20px rgba(0,0,0,.5);
+  --shadow-cover: 0 4px 16px rgba(0,0,0,.55);
+  --shadow-thumb: 0 2px 8px rgba(0,0,0,.45);
+  --rating-bg: #3a2d10; --rating-text: #f3c969;
+  --category-bg: #0f2c44; --category-text: #7cc7f5;
+}
+
+[data-theme="sepia-dark"] {
+  --bg-color: #1f1813; --bg-card: #2a201a;
+  --text-main: #efe5d6; --text-muted: #a8978a;
+  --primary: #e8826f; --primary-hover: #f29885;
+  --accent: #4d342f; --accent-light: #2f211c;
+  --border-light: #3a2d24;
+  --shadow-card-hover: 0 6px 20px rgba(0,0,0,.55);
+  --shadow-cover: 0 4px 16px rgba(0,0,0,.6);
+  --shadow-thumb: 0 2px 8px rgba(0,0,0,.5);
+  --rating-bg: #3a2810; --rating-text: #f0c074;
+  --category-bg: #1a3140; --category-text: #82b8d8;
+}
+
+[data-theme="ink"] {
+  --bg-color: #000000; --bg-card: #0d0d0e;
+  --text-main: #f0eeea; --text-muted: #8a8682;
+  --primary: #ed7561; --primary-hover: #f78a77;
+  --accent: #3a2825; --accent-light: #1a1413;
+  --border-light: #1f1d1c;
+  --shadow-card-hover: 0 6px 20px rgba(255,100,80,.08);
+  --shadow-cover: 0 4px 16px rgba(0,0,0,.8);
+  --shadow-thumb: 0 2px 8px rgba(0,0,0,.7);
+  --rating-bg: #2a1f08; --rating-text: #f5cd72;
+  --category-bg: #0a2230; --category-text: #6db8e0;
 }
 
 body {
-    background-color: var(--bg-color);
-    color: var(--text-main);
-    font-family: 'Inter', 'Outfit', 'Segoe UI', Tahoma, sans-serif;
-    margin: 0;
-    padding: 0;
-    transition: background-color 0.3s ease, color 0.3s ease;
-    height: 100vh;
-    display: flex;
-    flex-direction: column;
+  margin: 0;
+  min-height: 100vh;
+  /* moody, neutral macOS-ish wallpaper that works in light + dark themes */
+  background:
+    radial-gradient(ellipse at 30% 20%, #5e6877 0%, transparent 55%),
+    radial-gradient(ellipse at 80% 80%, #7a6457 0%, transparent 55%),
+    linear-gradient(135deg, #2c2f3a 0%, #1a1d24 100%);
+  background-attachment: fixed;
+  transition: background-color 0.25s ease;
+  font-family: 'Inter', sans-serif;
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  padding: 28px;
+  box-sizing: border-box;
 }
 
-#titlebar {
-    height: 40px;
-    background-color: var(--bg-color);
-    border-bottom: 1px solid var(--border-light);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0 16px;
-    user-select: none;
-    -webkit-app-region: drag;
-    /* Makes it draggble in some webviews */
+.dt-window {
+  width: 100%;
+  max-width: 1440px;
+  min-height: calc(100vh - 56px);
+  background: var(--bg-color);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow:
+    0 30px 80px rgba(0,0,0,.45),
+    0 12px 28px rgba(0,0,0,.3),
+    0 0 0 1px rgba(255,255,255,.06);
+  display: flex;
+  flex-direction: column;
 }
 
-.titlebar-brand {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-weight: 700;
-    font-size: 1.1rem;
-    color: var(--primary);
-    cursor: pointer;
+.dt-window-chrome {
+  height: 40px;
+  background: var(--win-chrome-bg, color-mix(in srgb, var(--bg-color) 80%, var(--text-main) 4%));
+  border-bottom: 1px solid var(--border-light);
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  user-select: none;
+  flex-shrink: 0;
 }
 
-.titlebar-icon {
-    width: 20px;
-    height: 20px;
+.dt-traffic-lights {
+  display: flex;
+  gap: 8px;
+  width: 70px;
 }
 
-.titlebar-controls {
-    display: flex;
-    gap: 8px;
-    -webkit-app-region: no-drag;
+.dt-light {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 0.5px solid rgba(0,0,0,0.1);
+}
+.dt-light--close { background: #ff5f57; }
+.dt-light--min { background: #ffbd2e; }
+.dt-light--max { background: #28c940; }
+
+.dt-tabs {
+  display: flex;
+  height: 100%;
+  align-items: flex-end;
+  padding: 0 12px;
+  gap: 4px;
+  flex: 1;
 }
 
-.titlebar-controls button {
-    background: transparent;
-    border: none;
-    cursor: pointer;
-    font-size: 16px;
-    padding: 4px 8px;
-    border-radius: 4px;
-    color: var(--text-muted);
-    transition: all 0.2s;
+.dt-tab {
+  height: 32px;
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--win-tab-inactive-text, var(--text-muted));
+  border-radius: 8px 8px 0 0;
+  cursor: pointer;
+  max-width: 180px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.titlebar-controls button:hover {
-    background-color: var(--accent-light);
-    color: var(--primary);
+.dt-tab--active {
+  background: var(--win-tab-active-bg, var(--bg-card));
+  color: var(--win-tab-active-text, var(--text-main));
 }
 
-.titlebar-controls button.close:hover {
-    background-color: var(--primary);
-    color: white;
+.dt-window-body {
+  flex: 1;
+  display: flex;
+  min-height: 0;
 }
 
-.content {
-    padding: 20px;
-    flex-grow: 1;
-    overflow-y: auto;
+.dt-window-body > * {
+  flex: 1;
+  min-height: 0;
 }
 
 /* ── Resize handles ──────────────────────────────────────────── */

@@ -1,6 +1,11 @@
 pub mod author_detail;
+pub mod authors;
 pub mod book_detail;
 pub mod chapter_reader;
 pub mod home;
+pub mod login;
 pub mod not_found;
+pub mod profile;
+pub mod settings;
 pub mod shelf;
+pub mod signup;
