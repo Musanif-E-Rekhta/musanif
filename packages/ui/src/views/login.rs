@@ -27,7 +27,18 @@ pub fn Login() -> Element {
                     class: "login-form",
                     onsubmit: move |e| {
                         e.prevent_default();
-                        nav.push(Route::Home {});
+                        let email_val = email.cloned();
+                        let password_val = password.cloned();
+                        spawn(async move {
+                            if let Some(payload) = crate::api::login(crate::models::LoginInput {
+                                email: email_val.clone(),
+                                password: password_val,
+                            }).await {
+                                crate::api::set_auth_token(Some(payload.token));
+                                *crate::CURRENT_USER.write() = Some(payload.user);
+                                nav.push(Route::Home {});
+                            }
+                        });
                     },
 
                     div { class: "form-group",

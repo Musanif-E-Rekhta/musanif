@@ -1,60 +1,26 @@
 use crate::components::Cover;
+use crate::{Route, CURRENT_USER};
 use dioxus::prelude::*;
 use dioxus_free_icons::{
-    icons::ld_icons::{LdPencil, LdShare2},
+    icons::ld_icons::{LdLogIn, LdLogOut, LdPencil, LdShare2, LdUserPlus},
     Icon,
 };
 
 #[component]
 pub fn Profile() -> Element {
     let stats = [
-        ("142", "Books finished"),
-        ("1,847", "Hours read"),
-        ("23", "Day streak"),
-        ("412", "Highlights"),
+        ("0", "Books finished"),
+        ("0", "Hours read"),
+        ("0", "Day streak"),
+        ("0", "Highlights"),
     ];
 
-    let recently_finished = [
-        (
-            "Udas Naslein",
-            "Abdullah Hussein",
-            "#e6c8b5",
-            "اداس",
-            "ع",
-            "Mar 14",
-        ),
-        (
-            "Aab-e-Hayat",
-            "Muhammad Husain Azad",
-            "#d4b894",
-            "آب حیات",
-            "م",
-            "Feb 28",
-        ),
-        (
-            "Toba Tek Singh",
-            "Saadat Hasan Manto",
-            "#eed7c2",
-            "ٹوبہ",
-            "س",
-            "Feb 09",
-        ),
-    ];
+    let recently_finished: [(&str, &str, &str, &str, &str, &str); 0] = [];
 
-    let highlights = [
-        (
-            "The night is long; even the moon is tired of waiting.",
-            "Diwan-e-Ghalib · Ghazal 47",
-        ),
-        (
-            "Some sentences are doors. You can stand outside them for years.",
-            "Aag Ka Darya · Part II",
-        ),
-        (
-            "I am not a stranger to my own house. The house has become a stranger.",
-            "Toba Tek Singh",
-        ),
-    ];
+    let highlights: [(&str, &str); 0] = [];
+
+    let current_user = CURRENT_USER.read();
+    let is_authenticated = current_user.is_some();
 
     rsx! {
         div { class: "island is-main",
@@ -62,13 +28,37 @@ pub fn Profile() -> Element {
                 h2 { class: "is-main-title", "Profile" }
                 span { class: "is-main-subtitle", "Reading life · since March 2024" }
                 div { class: "is-main-actions",
-                    button { class: "is-btn",
-                        Icon { icon: LdShare2, width: 14, height: 14 }
-                        "Share"
-                    }
-                    button { class: "is-btn",
-                        Icon { icon: LdPencil, width: 14, height: 14 }
-                        "Edit"
+                    if is_authenticated {
+                        button { class: "is-btn",
+                            Icon { icon: LdShare2, width: 14, height: 14 }
+                            "Share"
+                        }
+                        button { class: "is-btn",
+                            Icon { icon: LdPencil, width: 14, height: 14 }
+                            "Edit"
+                        }
+                        button {
+                            class: "is-btn",
+                            onclick: move |_| {
+                                *CURRENT_USER.write() = None;
+                            },
+                            Icon { icon: LdLogOut, width: 14, height: 14 }
+                            "Sign out"
+                        }
+                    } else {
+                        Link {
+                            to: Route::Login {},
+                            class: "is-btn",
+                            style: "background: var(--primary); color: var(--bg-card); border-color: var(--primary)",
+                            Icon { icon: LdLogIn, width: 14, height: 14 }
+                            "Sign In"
+                        }
+                        Link {
+                            to: Route::Signup {},
+                            class: "is-btn",
+                            Icon { icon: LdUserPlus, width: 14, height: 14 }
+                            "Sign Up"
+                        }
                     }
                 }
             }
@@ -77,18 +67,23 @@ pub fn Profile() -> Element {
                 // User card
                 div { style: "display: flex; gap: 20px; padding: 20px; background: var(--bg-color); border-radius: 14px; margin-bottom: 20px",
                     div { style: "width: 72px; height: 72px; border-radius: 50%; background: var(--primary); color: var(--bg-card); display: flex; align-items: center; justify-content: center; font-size: 28px; font-weight: 700; flex-shrink: 0",
-                        "U"
-                    }
-                    div { style: "flex: 1",
-                        h3 { style: "margin: 0 0 4px; font-size: 22px; font-weight: 700", "Usaira Imisani" }
-                        p { style: "margin: 0 0 10px; color: var(--text-muted); font-size: 13px",
-                            "Lahore · Reading mostly poetry and partition-era fiction"
+                        if let Some(user) = current_user.as_ref() {
+                            "{user.username.chars().next().unwrap_or('?').to_ascii_uppercase()}"
+                        } else {
+                            "G"
                         }
-                        div { style: "display: flex; gap: 6px; flex-wrap: wrap",
-                            span { class: "is-chip", "ghazal" }
-                            span { class: "is-chip", "partition" }
-                            span { class: "is-chip", "mysticism" }
-                            span { class: "is-chip", "19th-century" }
+                    }
+                    div { style: "flex: 1; display: flex; flex-direction: column; justify-content: center;",
+                        if let Some(user) = current_user.as_ref() {
+                            h3 { style: "margin: 0 0 4px; font-size: 22px; font-weight: 700", "{user.username}" }
+                            p { style: "margin: 0; color: var(--text-muted); font-size: 13px",
+                                "{user.email}"
+                            }
+                        } else {
+                            h3 { style: "margin: 0 0 4px; font-size: 22px; font-weight: 700", "Guest" }
+                            p { style: "margin: 0; color: var(--text-muted); font-size: 13px",
+                                "Sign in to sync your progress and highlights."
+                            }
                         }
                     }
                 }
@@ -105,20 +100,7 @@ pub fn Profile() -> Element {
                     }
                 }
 
-                // Reading goal
-                div { class: "island is-rail-card", style: "margin-bottom: 28px",
-                    div { class: "is-rail-eyebrow", "2026 Goal" }
-                    p { style: "margin: 8px 0 4px; font-family: var(--font-serif)",
-                        span { style: "font-size: 32px; font-weight: 700", "14" }
-                        span { style: "font-size: 14px; color: var(--text-muted)", " / 24 books" }
-                    }
-                    div { class: "is-progress", style: "height: 6px; margin-top: 8px",
-                        div { class: "is-progress-fill", style: "width: 58%" }
-                    }
-                    p { style: "margin: 10px 0 0; font-size: 12px; color: var(--text-muted)",
-                        "You're 2 books ahead of pace. Next milestone: 18 by April end."
-                    }
-                }
+
 
                 // Two-column layout
                 div { style: "display: grid; grid-template-columns: 1fr 1fr; gap: 24px",

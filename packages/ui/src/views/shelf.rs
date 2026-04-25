@@ -3,9 +3,9 @@ use dioxus::prelude::*;
 use crate::{api, Route};
 
 const STATUSES: &[(&str, &str)] = &[
-    ("reading", "Reading · 3"),
-    ("readlater", "Want to Read · 7"),
-    ("completed", "Finished · 142"),
+    ("reading", "Reading"),
+    ("readlater", "Want to Read"),
+    ("completed", "Finished"),
     ("dropped", "Dropped"),
 ];
 
@@ -22,7 +22,7 @@ pub fn Shelf() -> Element {
         div { class: "island is-main",
             div { class: "is-main-header",
                 h2 { class: "is-main-title", "My Shelf" }
-                span { class: "is-main-subtitle", "12 books · 3 in progress" }
+                span { class: "is-main-subtitle", "Your saved books" }
                 div { class: "is-main-actions",
                     button { class: "is-btn", "+ Add book" }
                 }
