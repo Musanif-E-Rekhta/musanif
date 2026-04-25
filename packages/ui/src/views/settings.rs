@@ -164,13 +164,13 @@ fn AccountPrefs() -> Element {
             // User card
             div { style: "display: flex; gap: 14px; padding: 16px; background: var(--bg-color); border-radius: 12px; margin-bottom: 22px; align-items: center",
                 div { style: "width: 52px; height: 52px; border-radius: 50%; background: var(--primary); color: var(--bg-card); display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: 700",
-                    "U"
+                    "G"
                 }
                 div { style: "flex: 1",
-                    p { style: "margin: 0; font-size: 14px; font-weight: 700", "Usaira Imisani" }
-                    p { style: "margin: 0; font-size: 12px; color: var(--text-muted)", "usaira@example.com" }
+                    p { style: "margin: 0; font-size: 14px; font-weight: 700", "Guest" }
+                    p { style: "margin: 0; font-size: 12px; color: var(--text-muted)", "Not signed in" }
                 }
-                button { class: "is-btn", "Edit" }
+                button { class: "is-btn", "Sign In" }
             }
 
             // Plan
@@ -178,9 +178,8 @@ fn AccountPrefs() -> Element {
             div { style: "padding: 14px; background: var(--bg-color); border-radius: 10px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 22px",
                 div {
                     p { style: "margin: 0; font-size: 13px; font-weight: 600", "Musanif Reader" }
-                    p { style: "margin: 0; font-size: 11px; color: var(--text-muted)", "Free · 142 books read" }
+                    p { style: "margin: 0; font-size: 11px; color: var(--text-muted)", "Free" }
                 }
-                button { class: "is-btn is-btn--primary", "Upgrade" }
             }
 
             label { class: "settings-field-label", "Two-factor authentication" }

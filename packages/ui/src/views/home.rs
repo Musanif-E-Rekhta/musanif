@@ -1,8 +1,5 @@
 use dioxus::prelude::*;
-use dioxus_free_icons::{
-    icons::ld_icons::{LdBookOpen, LdBookmark, LdSearch},
-    Icon,
-};
+use dioxus_free_icons::{icons::ld_icons::LdSearch, Icon};
 
 use crate::{api, components::Cover, models::Book, Route};
 
@@ -24,30 +21,7 @@ pub fn Home() -> Element {
             }
 
             div { class: "is-main-body",
-                // Editor's Pick — featured card
-                div { class: "is-feature",
-                    div { class: "is-feature-cover",
-                        Cover { urdu: "غالب", mono: "غ", big: true }
-                    }
-                    div {
-                        div { class: "is-feature-eyebrow", "Editor's Pick · This Week" }
-                        h3 { class: "is-feature-title", "The wine-poems of Ghalib, freshly annotated" }
-                        p { class: "is-feature-blurb",
-                            "A new chapter-arrangement of the Diwan, opening with the rindana ghazals \
-                            — the wine and waste poems where Ghalib's voice is most himself."
-                        }
-                        div { class: "is-feature-actions",
-                            button { class: "is-btn is-btn--primary",
-                                Icon { icon: LdBookOpen, width: 14, height: 14 }
-                                "Start reading"
-                            }
-                            button { class: "is-btn",
-                                Icon { icon: LdBookmark, width: 14, height: 14 }
-                                "Save"
-                            }
-                        }
-                    }
-                }
+
 
                 // Recently Added header
                 div { style: "display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 14px",

@@ -38,3 +38,4 @@ impl Theme {
 
 pub static CURRENT_THEME: GlobalSignal<Theme> = Signal::global(|| Theme::Parchment);
 pub static CURRENT_PAGE_TITLE: GlobalSignal<&'static str> = Signal::global(|| "Discover");
+pub static CURRENT_USER: GlobalSignal<Option<crate::models::User>> = Signal::global(|| None);

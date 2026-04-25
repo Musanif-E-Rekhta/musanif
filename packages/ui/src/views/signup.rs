@@ -29,7 +29,27 @@ pub fn Signup() -> Element {
                     class: "login-form",
                     onsubmit: move |e| {
                         e.prevent_default();
-                        nav.push(Route::Home {});
+                        let name_val = name.cloned();
+                        let email_val = email.cloned();
+                        let password_val = password.cloned();
+                        let confirm_val = confirm.cloned();
+
+                        if password_val != confirm_val {
+                            // Basic validation for UI
+                            return;
+                        }
+
+                        spawn(async move {
+                            if let Some(payload) = crate::api::register(crate::models::RegisterInput {
+                                username: name_val.clone(),
+                                email: email_val.clone(),
+                                password: password_val,
+                            }).await {
+                                crate::api::set_auth_token(Some(payload.token));
+                                *crate::CURRENT_USER.write() = Some(payload.user);
+                                nav.push(Route::Home {});
+                            }
+                        });
                     },
 
                     div { class: "form-group",
