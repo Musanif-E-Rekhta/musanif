@@ -53,35 +53,23 @@
 
 body {
   margin: 0;
-  min-height: 100vh;
-  /* moody, neutral macOS-ish wallpaper that works in light + dark themes */
-  background:
-    radial-gradient(ellipse at 30% 20%, #5e6877 0%, transparent 55%),
-    radial-gradient(ellipse at 80% 80%, #7a6457 0%, transparent 55%),
-    linear-gradient(135deg, #2c2f3a 0%, #1a1d24 100%);
-  background-attachment: fixed;
-  transition: background-color 0.25s ease;
+  padding: 0;
+  background: var(--bg-color);
   font-family: 'Inter', sans-serif;
-  display: flex;
-  align-items: stretch;
-  justify-content: center;
-  padding: 28px;
-  box-sizing: border-box;
 }
 
 .dt-window {
-  width: 100%;
-  max-width: 1440px;
-  min-height: calc(100vh - 56px);
+  width: 100vw;
+  height: 100vh;
   background: var(--bg-color);
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow:
-    0 30px 80px rgba(0,0,0,.45),
-    0 12px 28px rgba(0,0,0,.3),
-    0 0 0 1px rgba(255,255,255,.06);
   display: flex;
   flex-direction: column;
+  overflow: hidden;
+}
+
+/* Override shared CSS — shell height relative to viewport minus the 40px chrome */
+.dt-window-body .is-shell {
+  height: calc(100vh - 40px);
 }
 
 .dt-window-chrome {
@@ -95,50 +83,66 @@ body {
   flex-shrink: 0;
 }
 
-.dt-traffic-lights {
+.dt-controls {
   display: flex;
-  gap: 8px;
-  width: 70px;
-}
-
-.dt-light {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  border: 0.5px solid rgba(0,0,0,0.1);
-}
-.dt-light--close { background: #ff5f57; }
-.dt-light--min { background: #ffbd2e; }
-.dt-light--max { background: #28c940; }
-
-.dt-tabs {
-  display: flex;
+  align-items: stretch;
   height: 100%;
-  align-items: flex-end;
-  padding: 0 12px;
-  gap: 4px;
-  flex: 1;
+  margin-left: auto;
+  flex-shrink: 0;
 }
 
-.dt-tab {
-  height: 32px;
-  padding: 0 16px;
+.dt-control-btn {
+  width: 46px;
+  height: 100%;
   display: flex;
   align-items: center;
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--win-tab-inactive-text, var(--text-muted));
-  border-radius: 8px 8px 0 0;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 13px;
   cursor: pointer;
-  max-width: 180px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  transition: background 0.1s, color 0.1s;
+  padding: 0;
+  line-height: 1;
 }
 
-.dt-tab--active {
-  background: var(--win-tab-active-bg, var(--bg-card));
-  color: var(--win-tab-active-text, var(--text-main));
+.dt-control-btn:hover {
+  background: rgba(128, 128, 128, 0.18);
+  color: var(--text-main);
+}
+
+.dt-control-btn--close:hover {
+  background: #e81123;
+  color: #ffffff;
+}
+
+.dt-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  padding: 0 4px;
+  font-size: 12px;
+  pointer-events: none;
+}
+
+.dt-breadcrumb-root {
+  font-weight: 600;
+  color: var(--text-main);
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.dt-breadcrumb-root:hover { color: var(--primary); }
+
+.dt-breadcrumb-sep {
+  color: var(--text-muted);
+  font-size: 11px;
+}
+
+.dt-breadcrumb-current {
+  color: var(--text-muted);
 }
 
 .dt-window-body {

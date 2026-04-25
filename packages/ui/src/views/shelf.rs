@@ -2,35 +2,12 @@ use dioxus::prelude::*;
 
 use crate::{api, Route};
 
-const SHELF_CSS: Asset = asset!("/assets/styling/shelf.css");
-
 const STATUSES: &[(&str, &str)] = &[
-    ("reading", "Reading"),
-    ("readlater", "Want to Read"),
-    ("completed", "Completed"),
+    ("reading", "Reading · 3"),
+    ("readlater", "Want to Read · 7"),
+    ("completed", "Finished · 142"),
     ("dropped", "Dropped"),
 ];
-
-#[component]
-fn ShelfHeader() -> Element {
-    if cfg!(feature = "mobile") {
-        rsx! {
-            div { class: "is-mob-header",
-                div {
-                    p { class: "is-mob-greet", "My Collection" }
-                    h1 { class: "is-mob-title", "Shelf" }
-                }
-            }
-        }
-    } else {
-        rsx! {
-            div { class: "is-main-header",
-                h2 { class: "is-main-title", "My Shelf" }
-                span { class: "is-main-subtitle", "12 books · 3 in progress" }
-            }
-        }
-    }
-}
 
 #[component]
 pub fn Shelf() -> Element {
@@ -42,26 +19,26 @@ pub fn Shelf() -> Element {
     });
 
     rsx! {
-        document::Link { rel: "stylesheet", href: SHELF_CSS }
-
-        div { class: "is-main",
-            ShelfHeader {}
+        div { class: "island is-main",
+            div { class: "is-main-header",
+                h2 { class: "is-main-title", "My Shelf" }
+                span { class: "is-main-subtitle", "12 books · 3 in progress" }
+                div { class: "is-main-actions",
+                    button { class: "is-btn", "+ Add book" }
+                }
+            }
 
             div { class: "is-main-body",
-                // ── status tabs ───────────────────────────────────────────────────
-                div { 
-                    style: "display: flex; gap: 4px; margin-bottom: 18px; border-bottom: 1px solid var(--border-light)",
+                // Status tabs
+                div { style: "display: flex; gap: 4px; margin-bottom: 18px; border-bottom: 1px solid var(--border-light)",
                     for (value, label) in STATUSES {
                         button {
-                            style: format_args!(
-                                "padding: 10px 14px; border: none; background: none; \
-                                 font-family: inherit; font-size: 13px; font-weight: 600; \
-                                 cursor: pointer; color: {}; \
-                                 border-bottom: 2px solid {}; \
-                                 margin-bottom: -1px",
-                                if active_status() == *value { "var(--primary)" } else { "var(--text-muted)" },
-                                if active_status() == *value { "var(--primary)" } else { "transparent" }
-                            ),
+                            key: "{value}",
+                            style: if active_status() == *value {
+                                "padding: 10px 14px; border: none; background: none; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer; color: var(--primary); border-bottom: 2px solid var(--primary); margin-bottom: -1px"
+                            } else {
+                                "padding: 10px 14px; border: none; background: none; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer; color: var(--text-muted); border-bottom: 2px solid transparent; margin-bottom: -1px"
+                            },
                             onclick: {
                                 let value = value.to_string();
                                 move |_| active_status.set(value.clone())
@@ -71,7 +48,7 @@ pub fn Shelf() -> Element {
                     }
                 }
 
-                // ── book list ─────────────────────────────────────────────────────
+                // Book list
                 match &*bookmarks.read() {
                     None => rsx! { div { class: "state-loading", "Loading…" } },
                     Some(None) => rsx! {
@@ -90,16 +67,15 @@ pub fn Shelf() -> Element {
                             for bm in bms {
                                 if let Some(book) = &bm.book {
                                     Link {
-                                        style: "display: flex; gap: 16px; padding: 14px; \
-                                                background: var(--bg-color); border-radius: 12px; \
-                                                align-items: center; cursor: pointer; text-decoration: none; color: inherit",
                                         key: "{bm.id}",
+                                        style: "display: flex; gap: 16px; padding: 14px; background: var(--bg-color); border-radius: 12px; align-items: center; cursor: pointer; text-decoration: none; color: inherit",
                                         to: Route::BookDetail { slug: book.slug.clone() },
-                                        div { class: "is-continue-cover", style: "width: 64px",
+                                        div { class: "is-continue-cover", style: "width: 64px; background: var(--accent-light)",
                                             div { class: "is-book-cover-art",
-                                                div { class: "is-book-cover-stamp", "{book.title.chars().next().unwrap_or(' ')}" }
+                                                div { class: "is-book-cover-stamp", "{book.title.chars().next().unwrap_or('م')}" }
                                                 div {}
                                                 div { class: "is-book-cover-title", "{book.title}" }
+                                                div { class: "is-book-cover-author" }
                                             }
                                         }
                                         div { style: "flex: 1",
@@ -124,14 +100,6 @@ pub fn Shelf() -> Element {
                                                 }
                                             }
                                         }
-                                    }
-                                } else {
-                                    div {
-                                        style: "display: flex; gap: 16px; padding: 14px; \
-                                                background: var(--bg-color); border-radius: 12px; \
-                                                align-items: center",
-                                        key: "{bm.id}",
-                                        p { style: "font-size: 14px; font-weight: 700; margin: 0", "Book #{bm.book_id}" }
                                     }
                                 }
                             }

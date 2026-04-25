@@ -18,28 +18,28 @@ pub fn AuthorDetail(slug: String) -> Element {
 
     rsx! {
         match &*author.read() {
-            None => rsx! { div { class: "state-loading", "Loading…" } },
-            Some(None) => rsx! { div { class: "state-error", "Author not found." } },
+            None => rsx! { div { class: "island is-main", div { class: "state-loading", "Loading…" } } },
+            Some(None) => rsx! { div { class: "island is-main", div { class: "state-error", "Author not found." } } },
             Some(Some(author)) => rsx! {
-                div { class: "is-main",
+                div { class: "island is-main",
                     div { class: "is-main-header",
                         h2 { class: "is-main-title", "{author.name}" }
                         span { class: "is-main-subtitle", "{author.followers} followers" }
                     }
 
                     div { class: "is-main-body",
-                        div { 
+                        div {
                             style: "display: flex; gap: 14px; padding: 14px; \
                                     background: var(--bg-color); border-radius: 12px; \
                                     align-items: center; margin-bottom: 24px",
-                            div { 
+                            div {
                                 style: "width: 48px; height: 48px; border-radius: 50%; \
                                         background: var(--accent-light); color: var(--primary); \
                                         display: flex; align-items: center; justify-content: center; \
                                         font-family: var(--font-urdu); fontSize: 20px; fontWeight: 700; flex-shrink: 0",
                                 "{author.name.chars().next().unwrap_or(' ')}"
                             }
-                            div { 
+                            div {
                                 p { style: "font-size: 14px; font-weight: 700; margin: 0 0 2px", "{author.name}" }
                                 if let Some(bio) = &author.bio {
                                     p { style: "font-size: 11px; color: var(--text-muted); margin: 0", "{bio}" }

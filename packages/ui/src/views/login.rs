@@ -2,6 +2,7 @@ use dioxus::prelude::*;
 
 use crate::Route;
 
+const MAIN_CSS: Asset = asset!("/assets/styling/main.css");
 const LOGIN_CSS: Asset = asset!("/assets/styling/login.css");
 
 #[component]
@@ -11,6 +12,7 @@ pub fn Login() -> Element {
     let nav = use_navigator();
 
     rsx! {
+        document::Link { rel: "stylesheet", href: MAIN_CSS }
         document::Link { rel: "stylesheet", href: LOGIN_CSS }
 
         div { class: "login-page",

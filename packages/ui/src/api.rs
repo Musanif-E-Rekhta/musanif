@@ -253,10 +253,7 @@ pub async fn fetch_chapter(book_slug: String, chapter_slug: String) -> Option<Ch
 }
 
 /// Resolve a chapter number to its slug without a full chapter fetch.
-pub async fn fetch_chapter_by_number(
-    book_slug: String,
-    number: i32,
-) -> Option<ChapterSlugRef> {
+pub async fn fetch_chapter_by_number(book_slug: String, number: i32) -> Option<ChapterSlugRef> {
     get_json(&format!("/books/{book_slug}/chapters/by-number/{number}")).await
 }
 
@@ -316,7 +313,10 @@ pub async fn fetch_chapter_reviews(
     book_slug: String,
     chapter_slug: String,
 ) -> Option<Vec<ChapterReview>> {
-    get_json(&format!("/books/{book_slug}/chapters/{chapter_slug}/reviews")).await
+    get_json(&format!(
+        "/books/{book_slug}/chapters/{chapter_slug}/reviews"
+    ))
+    .await
 }
 
 pub async fn submit_chapter_review(
@@ -397,7 +397,10 @@ pub async fn fetch_my_highlights() -> Option<Vec<Highlight>> {
     get_json("/me/highlights").await
 }
 
-pub async fn update_highlight(highlight_id: String, input: UpdateHighlightInput) -> Option<Highlight> {
+pub async fn update_highlight(
+    highlight_id: String,
+    input: UpdateHighlightInput,
+) -> Option<Highlight> {
     put_json(&format!("/highlights/{highlight_id}"), &input).await
 }
 
@@ -411,7 +414,10 @@ pub async fn fetch_chapter_comments(
     book_slug: String,
     chapter_slug: String,
 ) -> Option<Vec<Comment>> {
-    get_json(&format!("/books/{book_slug}/chapters/{chapter_slug}/comments")).await
+    get_json(&format!(
+        "/books/{book_slug}/chapters/{chapter_slug}/comments"
+    ))
+    .await
 }
 
 pub async fn create_comment(
@@ -489,12 +495,15 @@ pub async fn vote_translation(translation_id: String, value: i32) -> bool {
     struct Body {
         value: i32,
     }
-    req(Method::POST, &format!("/translations/{translation_id}/vote"))
-        .json(&Body { value })
-        .send()
-        .await
-        .map(|r| r.status().is_success())
-        .unwrap_or(false)
+    req(
+        Method::POST,
+        &format!("/translations/{translation_id}/vote"),
+    )
+    .json(&Body { value })
+    .send()
+    .await
+    .map(|r| r.status().is_success())
+    .unwrap_or(false)
 }
 
 // ── Collections ───────────────────────────────────────────────────────────────
@@ -530,7 +539,10 @@ pub async fn add_book_to_collection(
 }
 
 pub async fn remove_book_from_collection(collection_id: String, book_slug: String) -> bool {
-    delete_ok(&format!("/me/collections/{collection_id}/books/{book_slug}")).await
+    delete_ok(&format!(
+        "/me/collections/{collection_id}/books/{book_slug}"
+    ))
+    .await
 }
 
 // ── Bookmarks ─────────────────────────────────────────────────────────────────

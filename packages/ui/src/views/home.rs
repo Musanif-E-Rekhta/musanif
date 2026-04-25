@@ -1,72 +1,69 @@
 use dioxus::prelude::*;
+use dioxus_free_icons::{
+    icons::ld_icons::{LdBookOpen, LdBookmark, LdSearch},
+    Icon,
+};
 
-use crate::{api, models::Book, Route};
-
-const HOME_CSS: Asset = asset!("/assets/styling/home.css");
-
-#[component]
-fn HomeHeader() -> Element {
-    if cfg!(feature = "mobile") {
-        rsx! {
-            div { class: "is-mob-header",
-                div {
-                    p { class: "is-mob-greet", "Explore Urdu Literature" }
-                    h1 { class: "is-mob-title", "Discover" }
-                }
-                Link {
-                    class: "is-icon-btn",
-                    to: Route::Settings {},
-                    svg { width: "20", height: "20", fill: "none", stroke: "currentColor", stroke_width: "2", view_box: "0 0 24 24",
-                        circle { cx: "12", cy: "12", r: "3" }
-                        path { d: "M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" }
-                    }
-                }
-            }
-        }
-    } else {
-        rsx! {
-            div { class: "is-main-header",
-                h2 { class: "is-main-title", "Discover" }
-                span { class: "is-main-subtitle", "Explore the world of Urdu literature" }
-            }
-        }
-    }
-}
-
-#[component]
-fn HomeContinue() -> Element {
-    if cfg!(feature = "mobile") {
-        rsx! { div {} }
-    } else {
-        rsx! { ContinueRail {} }
-    }
-}
+use crate::{api, components::Cover, models::Book, Route};
 
 #[component]
 pub fn Home() -> Element {
-    let _input = use_signal(String::new);
-    let search_term = use_signal(String::new);
-
-    let books = use_resource(move || {
-        let q = search_term();
-        async move { api::fetch_books(if q.is_empty() { None } else { Some(q) }, None).await }
-    });
+    let books = use_resource(move || async move { api::fetch_books(None, None).await });
 
     rsx! {
-        document::Link { rel: "stylesheet", href: HOME_CSS }
-
-        div { class: "is-main",
-            HomeHeader {}
+        div { class: "island is-main",
+            div { class: "is-main-header",
+                h2 { class: "is-main-title", "Discover" }
+                span { class: "is-main-subtitle", "Urdu literature, curated" }
+                div { class: "is-main-actions",
+                    div { class: "is-search",
+                        Icon { icon: LdSearch, width: 14, height: 14, class: "is-search-icon" }
+                        input { placeholder: "Search books, authors, ghazals…" }
+                    }
+                }
+            }
 
             div { class: "is-main-body",
+                // Editor's Pick — featured card
+                div { class: "is-feature",
+                    div { class: "is-feature-cover",
+                        Cover { urdu: "غالب", mono: "غ", big: true }
+                    }
+                    div {
+                        div { class: "is-feature-eyebrow", "Editor's Pick · This Week" }
+                        h3 { class: "is-feature-title", "The wine-poems of Ghalib, freshly annotated" }
+                        p { class: "is-feature-blurb",
+                            "A new chapter-arrangement of the Diwan, opening with the rindana ghazals \
+                            — the wine and waste poems where Ghalib's voice is most himself."
+                        }
+                        div { class: "is-feature-actions",
+                            button { class: "is-btn is-btn--primary",
+                                Icon { icon: LdBookOpen, width: 14, height: 14 }
+                                "Start reading"
+                            }
+                            button { class: "is-btn",
+                                Icon { icon: LdBookmark, width: 14, height: 14 }
+                                "Save"
+                            }
+                        }
+                    }
+                }
+
+                // Recently Added header
+                div { style: "display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 14px",
+                    h3 { style: "font-size: 14px; font-weight: 700; margin: 0; letter-spacing: -0.005em", "Recently Added" }
+                    button { class: "is-btn is-btn--ghost", "View all" }
+                }
+
                 match &*books.read() {
-                    None => rsx! {
-                        div { class: "state-loading", "Loading books…" }
-                    },
+                    None => rsx! { div { class: "state-loading", "Loading books…" } },
                     Some(None) => rsx! {
                         div { class: "state-error",
                             p { "Could not reach the server." }
-                            p { class: "state-error-hint", "Make sure the backend is running on " code { "localhost:3000" } }
+                            p { class: "state-error-hint",
+                                "Make sure the backend is running on "
+                                code { "localhost:9678" }
+                            }
                         }
                     },
                     Some(Some(books)) if books.is_empty() => rsx! {
@@ -82,42 +79,6 @@ pub fn Home() -> Element {
                 }
             }
         }
-        HomeContinue {}
-    }
-}
-
-#[component]
-fn ContinueRail() -> Element {
-    rsx! {
-        aside { class: "island is-rail-card",
-            div { class: "is-rail-eyebrow", "Continue Reading" }
-            div { class: "is-continue",
-                div { class: "is-continue-cover",
-                    div { class: "is-book-cover-art",
-                        div { class: "is-book-cover-stamp", "بانگ" }
-                        div {}
-                        div { class: "is-book-cover-title", "ا" }
-                    }
-                }
-                div { class: "is-continue-info",
-                    div { class: "is-continue-title", "Bang-e-Dara" }
-                    div { class: "is-continue-chapter", "Allama Iqbal · Ch.47" }
-                    div { class: "is-progress",
-                        div { class: "is-progress-fill", style: "width: 68%" }
-                    }
-                    div { class: "is-progress-label",
-                        span { "68%" }
-                        span { "14 min left" }
-                    }
-                }
-            }
-
-            div { class: "is-divider" }
-
-            div { class: "is-rail-eyebrow", "Daily Quote" }
-            p { class: "is-quote", "“Hazaaron khwahishen aisi ke har khwahish pe dam nikle...”" }
-            div { class: "is-quote-source", "— Mirza Ghalib" }
-        }
     }
 }
 
@@ -132,16 +93,18 @@ fn BookCard(book: Book) -> Element {
         .collect::<Vec<_>>()
         .join(", ");
 
+    let first_char = book.title.chars().next().unwrap_or('م').to_string();
+
     rsx! {
         Link {
             class: "is-book",
             to: Route::BookDetail { slug: book.slug.clone() },
 
             div { class: "is-book-cover",
-                div { class: "is-book-cover-art",
-                    div { class: "is-book-cover-stamp", "{book.title.chars().next().unwrap_or(' ')}" }
-                    div {}
-                    div { class: "is-book-cover-title", "{book.title}" }
+                Cover {
+                    title: Some(book.title.clone()),
+                    urdu: Some(book.title.clone()),
+                    mono: Some(first_char),
                 }
             }
 
@@ -151,11 +114,8 @@ fn BookCard(book: Book) -> Element {
                 p { class: "is-book-author", "{author_names}" }
             }
 
-            div { class: "is-book-meta",
-                if let Some(rating) = book.avg_rating {
-                    span { class: "is-rating", "★ {rating:.1}" }
-                }
-                span { "{book.chapter_count} ch" }
+            if let Some(rating) = book.avg_rating {
+                span { class: "is-rating", "★ {rating:.1}" }
             }
         }
     }

@@ -1,11 +1,11 @@
 use dioxus::prelude::*;
 
-use crate::navbar::AppNavbar;
 use crate::mobile_shell::MobileShell;
+use crate::navbar::AppNavbar;
 use crate::views::{
-    author_detail::AuthorDetail, authors::Authors, book_detail::BookDetail, chapter_reader::ChapterReader,
-    home::Home, login::Login, not_found::NotFound, profile::Profile, settings::Settings,
-    shelf::Shelf, signup::Signup,
+    author_detail::AuthorDetail, authors::Authors, book_detail::BookDetail,
+    chapter_reader::ChapterReader, home::Home, login::Login, not_found::NotFound, profile::Profile,
+    settings::Settings, shelf::Shelf, signup::Signup,
 };
 
 #[component]

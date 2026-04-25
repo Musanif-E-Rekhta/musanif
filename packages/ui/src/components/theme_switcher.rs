@@ -1,5 +1,5 @@
+use crate::{Theme, CURRENT_THEME};
 use dioxus::prelude::*;
-use crate::{CURRENT_THEME, Theme};
 
 #[component]
 pub fn ThemeSwitcher() -> Element {
@@ -15,9 +15,9 @@ pub fn ThemeSwitcher() -> Element {
     let is_dark = CURRENT_THEME() != Theme::Parchment;
 
     rsx! {
-        div { 
+        div {
             style: "position: fixed; bottom: 20px; right: 20px; z-index: 200",
-            button { 
+            button {
                 onclick: move |_| open.toggle(),
                 aria_label: "Theme",
                 style: "width: 44px; height: 44px; border-radius: 50%;
@@ -28,7 +28,7 @@ pub fn ThemeSwitcher() -> Element {
                 {if is_dark { "☾" } else { "☀" }}
             }
             if open() {
-                div { 
+                div {
                     style: "position: absolute; bottom: 56px; right: 0;
                             background: var(--bg-card); border: 1px solid var(--border-light);
                             border-radius: 12px; padding: 10px; min-width: 200px;
@@ -40,6 +40,11 @@ pub fn ThemeSwitcher() -> Element {
                             onclick: move |_| {
                                 *CURRENT_THEME.write() = t;
                                 open.set(false);
+                                let theme_str = t.as_str();
+                                let _ = document::eval(&format!(
+                                    "document.documentElement.setAttribute('data-theme', '{theme_str}'); \
+                                     try {{ localStorage.setItem('musanif-theme', '{theme_str}'); }} catch(e) {{}}"
+                                ));
                             },
                             style: format_args!(
                                 "display: flex; align-items: center; gap: 10px; \
@@ -49,12 +54,12 @@ pub fn ThemeSwitcher() -> Element {
                                  text-align: left",
                                 if CURRENT_THEME() == t { "var(--accent-light)" } else { "transparent" }
                             ),
-                            span { 
+                            span {
                                 style: "width: 22px; height: 22px; border-radius: 6px; background: {bg};
                                         border: 1px solid var(--border-light); position: relative",
-                                span { 
+                                span {
                                     style: "position: absolute; right: 2px; bottom: 2px; width: 8px; height: 8px;
-                                            border-radius: 50%; background: {primary}; border: 1.5px solid var(--bg-card)" 
+                                            border-radius: 50%; background: {primary}; border: 1.5px solid var(--bg-card)"
                                 }
                             }
                             span { style: "flex: 1", "{name}" }

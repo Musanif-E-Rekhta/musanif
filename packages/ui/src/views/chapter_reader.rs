@@ -1,9 +1,11 @@
 use dioxus::prelude::*;
+use dioxus_free_icons::{
+    icons::ld_icons::{LdArrowLeft, LdArrowRight},
+    Icon,
+};
 use pulldown_cmark::{html, Options, Parser};
 
 use crate::{api, Route};
-
-const READER_CSS: Asset = asset!("/assets/styling/reader.css");
 
 fn to_html(content: &str, format: &str) -> String {
     match format {
@@ -30,14 +32,14 @@ pub fn ChapterReader(book_slug: String, chapter_slug: String) -> Element {
     });
 
     rsx! {
-        document::Link { rel: "stylesheet", href: READER_CSS }
-
         match &*chapter.read() {
-            None => rsx! { div { class: "state-loading reader-loading", "Loading chapter…" } },
+            None => rsx! { div { class: "island is-main", div { class: "state-loading", "Loading chapter…" } } },
             Some(None) => rsx! {
-                div { class: "state-error",
-                    p { "Chapter not found." }
-                    Link { to: Route::Home {}, class: "btn-link", "← Back to home" }
+                div { class: "island is-main",
+                    div { class: "state-error",
+                        p { "Chapter not found." }
+                        Link { to: Route::Home {}, class: "btn-link", "← Back to home" }
+                    }
                 }
             },
             Some(Some(ch)) => {
@@ -45,21 +47,13 @@ pub fn ChapterReader(book_slug: String, chapter_slug: String) -> Element {
                 let book_slug_nav = ch.book.as_ref().map(|b| b.slug.clone()).unwrap_or_default();
 
                 rsx! {
-                    div { class: "is-main",
+                    div { class: "island is-main",
                         // ── reader topbar ──────────────────────────────────────
                         div { class: "is-main-header",
                             Link {
                                 class: "is-btn is-btn--ghost",
                                 to: Route::BookDetail { slug: book_slug_nav.clone() },
-                                svg {
-                                    class: "is-nav-item-icon",
-                                    fill: "none",
-                                    stroke: "currentColor",
-                                    stroke_width: "1.5",
-                                    view_box: "0 0 16 16",
-                                    path { d: "M13 8 H3" }
-                                    path { d: "M7 4 L3 8 L7 12" }
-                                }
+                                Icon { icon: LdArrowLeft, width: 16, height: 16, class: "is-nav-item-icon" }
                                 if let Some(book) = &ch.book {
                                     " {book.title}"
                                 }
@@ -82,7 +76,7 @@ pub fn ChapterReader(book_slug: String, chapter_slug: String) -> Element {
                                     span { "{mins} min left" }
                                 }
                             }
-                            
+
                             h1 { class: "is-reader-h1",
                                 if let Some(title) = &ch.title {
                                     "{title}"
@@ -90,7 +84,7 @@ pub fn ChapterReader(book_slug: String, chapter_slug: String) -> Element {
                                     "Chapter {ch.number}"
                                 }
                             }
-                            
+
                             if let Some(summary) = &ch.summary {
                                 p { class: "is-reader-lede", "{summary}" }
                             }
@@ -126,9 +120,9 @@ fn ChapterNav(
     next: Option<crate::models::ChapterNav>,
 ) -> Element {
     rsx! {
-        nav { 
+        nav {
             style: "display: flex; justify-content: space-between; gap: 12px; margin-top: 24px",
-            div { 
+            div {
                 if let Some(prev) = &prev {
                     Link {
                         to: Route::ChapterReader {
@@ -136,15 +130,7 @@ fn ChapterNav(
                             chapter_slug: prev.slug.clone(),
                         },
                         class: "is-btn",
-                        svg {
-                            class: "is-nav-item-icon",
-                            fill: "none",
-                            stroke: "currentColor",
-                            stroke_width: "1.5",
-                            view_box: "0 0 16 16",
-                            path { d: "M13 8 H3" }
-                            path { d: "M7 4 L3 8 L7 12" }
-                        }
+                        Icon { icon: LdArrowLeft, width: 16, height: 16, class: "is-nav-item-icon" }
                         if let Some(title) = &prev.title {
                             "{title}"
                         } else {
@@ -153,7 +139,7 @@ fn ChapterNav(
                     }
                 }
             }
-            div { 
+            div {
                 if let Some(next) = &next {
                     Link {
                         to: Route::ChapterReader {
@@ -166,15 +152,7 @@ fn ChapterNav(
                         } else {
                             "Chapter {next.number}"
                         }
-                        svg {
-                            class: "is-nav-item-icon",
-                            fill: "none",
-                            stroke: "currentColor",
-                            stroke_width: "1.5",
-                            view_box: "0 0 16 16",
-                            path { d: "M3 8 H13" }
-                            path { d: "M9 4 L13 8 L9 12" }
-                        }
+                        Icon { icon: LdArrowRight, width: 16, height: 16, class: "is-nav-item-icon" }
                     }
                 }
             }

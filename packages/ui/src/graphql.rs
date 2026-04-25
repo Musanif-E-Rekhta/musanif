@@ -81,7 +81,11 @@ pub async fn register(username: String, email: String, password: String) -> Opti
                 user { id username email }
             }
         }"#,
-        Vars { username, email, password },
+        Vars {
+            username,
+            email,
+            password,
+        },
     )
     .await
     .map(|d| d.register_user)
@@ -144,7 +148,10 @@ pub async fn reset_password_with_token(token: String, new_password: String) -> b
         r#"mutation ResetPassword($token: String!, $new_password: String!) {
             reset_password_with_token(token: $token, new_password: $new_password)
         }"#,
-        Vars { token, new_password },
+        Vars {
+            token,
+            new_password,
+        },
     )
     .await
     .map(|d| d.reset_password_with_token)
@@ -294,7 +301,12 @@ pub async fn fetch_books(
                 avg_rating review_count chapter_count is_published
             }
         }"#,
-        Vars { q, lang, limit, offset },
+        Vars {
+            q,
+            lang,
+            limit,
+            offset,
+        },
     )
     .await
     .map(|d| d.books)
@@ -372,7 +384,11 @@ pub async fn fetch_books_by_author(
                 id title slug avg_rating is_published cover_url
             }
         }"#,
-        Vars { slug, limit, offset },
+        Vars {
+            slug,
+            limit,
+            offset,
+        },
     )
     .await
     .map(|d| d.books_by_author)
@@ -399,7 +415,10 @@ pub async fn fetch_chapter(book_slug: String, chapter_slug: String) -> Option<Ch
                 next_chapter { number title slug }
             }
         }"#,
-        Vars { book_slug, chapter_slug },
+        Vars {
+            book_slug,
+            chapter_slug,
+        },
     )
     .await
     .map(|d| d.chapter)
@@ -429,7 +448,11 @@ pub async fn fetch_book_reviews(
                 reading_status verified_reader helpful_count status created_at
             }
         }"#,
-        Vars { book_slug, limit, offset },
+        Vars {
+            book_slug,
+            limit,
+            offset,
+        },
     )
     .await
     .map(|d| d.book_reviews)
@@ -495,7 +518,12 @@ pub async fn fetch_word_translations(
                 scope context_note upvotes downvotes score
             }
         }"#,
-        Vars { word, target_lang, book_slug, chapter_slug },
+        Vars {
+            word,
+            target_lang,
+            book_slug,
+            chapter_slug,
+        },
     )
     .await
     .map(|d| d.word_translations)
@@ -524,7 +552,11 @@ pub async fn fetch_my_shelf(
                 id book_id status progress notes
             }
         }"#,
-        Vars { status, limit, offset },
+        Vars {
+            status,
+            limit,
+            offset,
+        },
     )
     .await
     .map(|d| d.my_bookmarks)
@@ -578,7 +610,14 @@ pub async fn upsert_bookmark(
         r#"mutation UpsertBookmark($input: UpsertBookmarkInput!) {
             upsert_bookmark(input: $input) { id book_id status progress }
         }"#,
-        Vars { input: Input { book_slug, status, progress, notes } },
+        Vars {
+            input: Input {
+                book_slug,
+                status,
+                progress,
+                notes,
+            },
+        },
     )
     .await
     .map(|d| d.upsert_bookmark)
@@ -616,7 +655,14 @@ pub async fn submit_book_review(
             }
         }"#,
         Vars {
-            input: Input { book_slug, rating, title, body, contains_spoiler, reading_status },
+            input: Input {
+                book_slug,
+                rating,
+                title,
+                body,
+                contains_spoiler,
+                reading_status,
+            },
         },
     )
     .await
