@@ -1,0 +1,17 @@
+[package]
+edition.workspace = true
+license.workspace = true
+name = "admin"
+publish.workspace = true
+repository.workspace = true
+version.workspace = true
+
+[features]
+default = ["web"]
+desktop = ["dioxus/desktop"]
+web = ["dioxus/web"]
+
+[dependencies]
+dioxus = { workspace = true, features = ["router"] }
+dioxus-free-icons.workspace = true
+ui.workspace = true

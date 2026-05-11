@@ -1,26 +1,36 @@
-# Development
+# mobile
 
-The mobile crate defines the entrypoint for the mobile app along with any assets, components and dependencies that are specific to mobile builds. The mobile crate starts out something like this:
+Mobile shell (iOS + Android) for the Musanif reader. Mounts `ui::Route` and turns on the `mobile` feature on `ui` so the reader, profile, and discover views render with mobile-only chrome from `ui::views::mobile`.
+
+## Layout
 
 ```
-mobile/
-├─ assets/ # Assets used by the mobile app - Any platform specific assets should go in this folder
-├─ src/
-│  ├─ main.rs # The entrypoint for the mobile app.It also defines the routes for the mobile platform
-│  ├─ views/ # The views each route will render in the mobile version of the app
-│  │  ├─ mod.rs # Defines the module for the views route and re-exports the components for each route
-│  │  ├─ blog.rs # The component that will render at the /blog/:id route
-│  │  ├─ home.rs # The component that will render at the / route
-├─ Cargo.toml # The mobile crate's Cargo.toml - This should include all mobile specific dependencies
+src/
+└── main.rs   # `App` component: stylesheet + Router::<ui::Route>
+assets/
+└── main.css
 ```
 
-## Dependencies
-This crate will only be included in the mobile build, so you should add all mobile specific dependencies to this crate's [Cargo.toml](../Cargo.toml) file instead of the shared [ui](../ui/Cargo.toml) crate.
+This crate is intentionally thin — every screen is built in [`ui`](../ui), with platform-specific layouts living in `ui::views::mobile::*`. Branching happens at the top of each route component (`if cfg!(feature = "mobile") { … }`).
 
-### Serving Your Mobile App
-
-Mobile platforms are shared in a single crate. To serve mobile, you need to explicitly set your target device to `android` or `ios`:
+## Run
 
 ```bash
+cd musanif/packages/mobile
+
+# iOS simulator
+dx serve --platform ios
+
+# Android emulator
 dx serve --platform android
 ```
+
+You'll need the corresponding mobile toolchain (`cargo-ndk` for Android, Xcode for iOS).
+
+## Token storage caveat
+
+`api::token` falls back to in-memory storage on mobile, so the user is signed out on every cold start. Keychain (iOS) and EncryptedSharedPreferences (Android) `TokenStore` impls are queued in `INTEGRATION_PLAN.md` Phase 3.
+
+## License
+
+CC0-1.0

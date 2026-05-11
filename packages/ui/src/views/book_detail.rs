@@ -1,6 +1,11 @@
 use dioxus::prelude::*;
 
-use crate::{api, components::Cover, models::ChapterSummary, Route};
+use crate::{
+    api,
+    components::{Cover, PageHeader, StatGrid, StatTile},
+    models::ChapterSummary,
+    Route,
+};
 
 #[component]
 pub fn BookDetail(slug: String) -> Element {
@@ -30,16 +35,19 @@ pub fn BookDetail(slug: String) -> Element {
             },
             Some(Some(book)) => rsx! {
                 div { class: "island is-main",
-                    div { class: "is-main-header",
-                        button { class: "is-btn is-btn--ghost",
-                            onclick: move |_| {},
-                            "← Discover"
-                        }
-                        span { class: "is-main-subtitle", "Poetry · Classical" }
-                        div { class: "is-main-actions",
+                    PageHeader {
+                        title_slot: rsx! {
+                            Link {
+                                to: Route::Home {},
+                                class: "is-btn is-btn--ghost",
+                                "← Discover"
+                            }
+                        },
+                        subtitle: "Poetry · Classical".to_string(),
+                        actions: rsx! {
                             button { class: "is-btn", "Add to Shelf" }
                             button { class: "is-btn", "Share" }
-                        }
+                        },
                     }
 
                     div { class: "is-main-body",
@@ -53,11 +61,11 @@ pub fn BookDetail(slug: String) -> Element {
                                         big: true,
                                     }
                                 }
-                                div { style: "display: flex; flex-direction: column; gap: 6px; margin-top: 14px",
-                                    button { class: "is-btn is-btn--primary", style: "justify-content: center",
+                                div { class: "is-detail-actions",
+                                    button { class: "is-btn is-btn--primary is-btn--block",
                                         "Start reading"
                                     }
-                                    button { class: "is-btn", style: "justify-content: center",
+                                    button { class: "is-btn is-btn--block",
                                         "Add to shelf"
                                     }
                                 }
@@ -65,14 +73,16 @@ pub fn BookDetail(slug: String) -> Element {
 
                             // Right column: info + TOC
                             div {
-                                span { class: "is-chip", "Urdu" }
-                                if let Some(categories) = &book.categories {
-                                    for cat in categories.iter().take(2) {
-                                        span { class: "is-chip", style: "margin-left: 4px", "{cat.name}" }
+                                div { class: "is-detail-chips",
+                                    span { class: "is-chip", "Urdu" }
+                                    if let Some(categories) = &book.categories {
+                                        for cat in categories.iter().take(2) {
+                                            span { class: "is-chip", "{cat.name}" }
+                                        }
                                     }
                                 }
 
-                                h1 { class: "is-detail-h1", style: "margin-top: 10px", "{book.title}" }
+                                h1 { class: "is-detail-h1", "{book.title}" }
 
                                 p { class: "is-detail-author",
                                     if let Some(authors) = &book.authors {
@@ -89,26 +99,26 @@ pub fn BookDetail(slug: String) -> Element {
                                     }
                                 }
 
-                                div { class: "is-detail-stats",
-                                    div {
-                                        div { class: "is-detail-stat-label", "Rating" }
-                                        div { class: "is-detail-stat-value",
-                                            if let Some(r) = book.avg_rating {
-                                                "★ {r:.1}"
-                                            } else {
-                                                "N/A"
-                                            }
-                                        }
+                                StatGrid {
+                                    StatTile {
+                                        value: book.avg_rating
+                                            .map(|r| format!("★ {r:.1}"))
+                                            .unwrap_or_else(|| "—".to_string()),
+                                        label: "Rating".to_string(),
                                     }
-                                    div {
-                                        div { class: "is-detail-stat-label", "Chapters" }
-                                        div { class: "is-detail-stat-value", "{book.chapter_count}" }
+                                    StatTile {
+                                        value: book.chapter_count.to_string(),
+                                        label: "Chapters".to_string(),
                                     }
-                                    if let Some(pages) = book.page_count {
-                                        div {
-                                            div { class: "is-detail-stat-label", "Pages" }
-                                            div { class: "is-detail-stat-value", "{pages}" }
-                                        }
+                                    StatTile {
+                                        value: book.page_count
+                                            .map(|p| p.to_string())
+                                            .unwrap_or_else(|| "—".to_string()),
+                                        label: "Pages".to_string(),
+                                    }
+                                    StatTile {
+                                        value: book.review_count.to_string(),
+                                        label: "Reviews".to_string(),
                                     }
                                 }
 
@@ -121,7 +131,7 @@ pub fn BookDetail(slug: String) -> Element {
                                 }
 
                                 if let Some(tags) = &book.tags {
-                                    div { style: "display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px",
+                                    div { class: "is-detail-tags",
                                         for tag in tags.iter().take(5) {
                                             span { class: "is-chip", "{tag.name}" }
                                         }

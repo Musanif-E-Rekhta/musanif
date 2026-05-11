@@ -1,11 +1,12 @@
+use chrono::{DateTime, Utc};
 use dioxus::prelude::*;
 use dioxus_free_icons::{
-    icons::ld_icons::{LdArrowLeft, LdArrowRight},
+    icons::ld_icons::{LdArrowLeft, LdArrowRight, LdBookmark, LdMoon, LdEllipsis, LdType},
     Icon,
 };
 use pulldown_cmark::{html, Options, Parser};
 
-use crate::{api, Route};
+use crate::{api, models::RecordReadingSessionInput, Route};
 
 fn to_html(content: &str, format: &str) -> String {
     match format {
@@ -22,6 +23,15 @@ fn to_html(content: &str, format: &str) -> String {
 
 #[component]
 pub fn ChapterReader(book_slug: String, chapter_slug: String) -> Element {
+    if cfg!(feature = "mobile") {
+        return rsx! {
+            crate::views::mobile::reader::MobileReader {
+                book_slug: book_slug.clone(),
+                chapter_slug: chapter_slug.clone(),
+            }
+        };
+    }
+
     let book_slug = use_memo(move || book_slug.clone());
     let chapter_slug = use_memo(move || chapter_slug.clone());
 
@@ -29,6 +39,34 @@ pub fn ChapterReader(book_slug: String, chapter_slug: String) -> Element {
         let bs = book_slug();
         let cs = chapter_slug();
         async move { api::fetch_chapter(bs, cs).await }
+    });
+
+    // Track when the user opened this chapter; on unmount fire a
+    // record_reading_session mutation so the backend can stitch together
+    // an activity stream. Sessions <1 min are dropped as noise.
+    let started_at: Signal<DateTime<Utc>> = use_signal(Utc::now);
+    use_drop(move || {
+        let started = *started_at.peek();
+        let bs = book_slug();
+        let cs = chapter_slug();
+        let now = Utc::now();
+        let mins = ((now - started).num_seconds() / 60) as i32;
+        if mins < 1 {
+            return;
+        }
+        spawn(async move {
+            let _ = api::record_reading_session(RecordReadingSessionInput {
+                book_slug: bs,
+                chapter_slug: Some(cs),
+                started_at: started.to_rfc3339(),
+                ended_at: Some(now.to_rfc3339()),
+                duration_mins: Some(mins),
+                page_start: None,
+                page_end: None,
+                device: None,
+            })
+            .await;
+        });
     });
 
     rsx! {
@@ -58,12 +96,24 @@ pub fn ChapterReader(book_slug: String, chapter_slug: String) -> Element {
                                     " {book.title}"
                                 }
                             }
-                            div { class: "is-main-actions",
+                            span { class: "is-main-subtitle",
+                                "Chapter {ch.number}"
                                 if let Some(mins) = ch.reading_time_mins {
-                                    span { class: "is-main-subtitle", "{mins} min read" }
+                                    " · {mins} min read"
                                 }
-                                if let Some(rating) = ch.avg_rating {
-                                    span { class: "is-main-subtitle", "★ {rating:.1}" }
+                            }
+                            div { class: "is-main-actions",
+                                button { class: "is-icon-btn", aria_label: "Type",
+                                    Icon { icon: LdType, width: 14, height: 14 }
+                                }
+                                button { class: "is-icon-btn", aria_label: "Theme",
+                                    Icon { icon: LdMoon, width: 14, height: 14 }
+                                }
+                                button { class: "is-icon-btn", aria_label: "Bookmark",
+                                    Icon { icon: LdBookmark, width: 14, height: 14 }
+                                }
+                                button { class: "is-icon-btn", aria_label: "More",
+                                    Icon { icon: LdEllipsis, width: 14, height: 14 }
                                 }
                             }
                         }
@@ -120,8 +170,7 @@ fn ChapterNav(
     next: Option<crate::models::ChapterNav>,
 ) -> Element {
     rsx! {
-        nav {
-            style: "display: flex; justify-content: space-between; gap: 12px; margin-top: 24px",
+        nav { class: "reader-nav",
             div {
                 if let Some(prev) = &prev {
                     Link {

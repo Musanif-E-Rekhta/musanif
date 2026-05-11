@@ -1,26 +1,38 @@
-# Development
+# web
 
-The web crate defines the entrypoint for the web app along with any assets, components and dependencies that are specific to web builds. The web crate starts out something like this:
+The browser shell for the Musanif reader. Wraps `ui::Route` in a Dioxus router and serves at `dx serve`'s default port. WebAssembly target.
+
+## Layout
 
 ```
-web/
-├─ assets/ # Assets used by the web app - Any platform specific assets should go in this folder
-├─ src/
-│  ├─ main.rs # The entrypoint for the web app.It also defines the routes for the web platform
-│  ├─ views/ # The views each route will render in the web version of the app
-│  │  ├─ mod.rs # Defines the module for the views route and re-exports the components for each route
-│  │  ├─ blog.rs # The component that will render at the /blog/:id route
-│  │  ├─ home.rs # The component that will render at the / route
-├─ Cargo.toml # The web crate's Cargo.toml - This should include all web specific dependencies
+src/
+└── main.rs   # `App` component: applies the persisted theme and mounts ui::Route
+assets/
+├── favicon.ico
+└── main.css
 ```
 
-## Dependencies
-This crate will only be included in the web build, so you should add all web specific dependencies to this crate's [Cargo.toml](../Cargo.toml) file instead of the shared [ui](../ui/Cargo.toml) crate.
+`web` adds nothing on top of [`ui`](../ui) other than the entry point and the WASM-target dependencies (e.g. `web-sys` is pulled by `ui` only under `cfg(target_arch = "wasm32")`). Anything reusable across platforms should land in `ui`.
 
-### Serving Your Web App
-
-You can start your web app with the following command:
+## Run
 
 ```bash
-dx serve
+# from repo root
+cd musanif/packages/web
+dx serve                         # default platform = web
 ```
+
+The dev server expects the merk backend on `http://localhost:9678/api/graphql` (override with `GRAPHQL_URL` in `musanif/.env.local` — see `packages/ui/build.rs`).
+
+## Build for production
+
+```bash
+dx build --release --platform web
+# output: dist/
+```
+
+To embed the artefact into the merk single-binary deploy, build with `EMBED_FRONTEND=true` per the merk Dockerfile.
+
+## License
+
+CC0-1.0

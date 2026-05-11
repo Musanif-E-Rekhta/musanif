@@ -1,26 +1,31 @@
-# Development
+# desktop
 
-The desktop crate defines the entrypoint for the desktop app along with any assets, components and dependencies that are specific to desktop builds. The desktop crate starts out something like this:
+Desktop shell for the Musanif reader, built on Dioxus's tao/wry backend. Adds a frameless window with a custom title bar — drag region, breadcrumb, and platform-style window controls — over `ui::Route`.
+
+## Layout
 
 ```
-desktop/
-├─ assets/ # Assets used by the desktop app - Any platform specific assets should go in this folder
-├─ src/
-│  ├─ main.rs # The entrypoint for the desktop app.It also defines the routes for the desktop platform
-│  ├─ views/ # The views each route will render in the desktop version of the app
-│  │  ├─ mod.rs # Defines the module for the views route and re-exports the components for each route
-│  │  ├─ blog.rs # The component that will render at the /blog/:id route
-│  │  ├─ home.rs # The component that will render at the / route
-├─ Cargo.toml # The desktop crate's Cargo.toml - This should include all desktop specific dependencies
+src/
+└── main.rs   # window config (no decorations, custom title bar) + App component
+assets/
+└── main.css
 ```
 
-## Dependencies
-This crate will only be included in the desktop build, so you should add all desktop specific dependencies to this crate's [Cargo.toml](../Cargo.toml) file instead of the shared [ui](../ui/Cargo.toml) crate.
+The decorationless `WindowBuilder` and the `WindowTab` / `WindowTabStrip` components live here because they're desktop-specific chrome. The router and views come from [`ui`](../ui).
 
-### Serving Your Desktop App
-
-You can start your desktop app with the following command:
+## Run
 
 ```bash
-dx serve
+cd musanif/packages/desktop
+dx serve --platform desktop
 ```
+
+The desktop build talks to the same backend the web build does (`GRAPHQL_URL`, `API_BASE_URL` env vars compiled in via `packages/ui/build.rs`). On first run, configure those in `musanif/.env.local` to point at your merk instance.
+
+## Token storage caveat
+
+`api::token` falls back to in-memory storage on desktop today, so the user is signed out on every restart. A `keyring`-backed `TokenStore` impl is queued in `INTEGRATION_PLAN.md` Phase 3.
+
+## License
+
+CC0-1.0

@@ -5,9 +5,18 @@ use dioxus_free_icons::{
     Icon,
 };
 
+const SHARED_CSS: Asset = asset!("/assets/styling/main.css");
+
 #[component]
 pub fn MobileShell() -> Element {
+    use_effect(crate::theme::load_persisted);
+
     rsx! {
+        // Load the shared primitives (.island, .is-progress, .is-quote,
+        // .is-reader-*, .is-chip, .is-btn, …) before the mobile-specific
+        // stylesheet so platform overrides win.
+        document::Link { rel: "stylesheet", href: SHARED_CSS }
+
         div { class: "is-mob",
             div { class: "is-mob-statusbar",
                 span { "9:41" }

@@ -1,61 +1,78 @@
 :root, [data-theme="parchment"] {
-  --bg-color: #f7f3ec; --bg-card: #ffffff;
-  --text-main: #2b2524; --text-muted: #5e524f;
-  --primary: #c24a3b; --primary-hover: #a83d30;
-  --accent: #e0adb0; --accent-light: #f1d6d8;
-  --border-light: #e5dac9;
-  --shadow-card-hover: 0 6px 20px rgba(0,0,0,.09);
-  --shadow-cover: 0 4px 16px rgba(0,0,0,.12);
-  --shadow-thumb: 0 2px 8px rgba(0,0,0,.10);
-  --rating-bg: #fef3c7; --rating-text: #92400e;
-  --category-bg: #e0f2fe; --category-text: #0369a1;
+  --bg-color: #f4ede1;
+  --bg-card: #fffdf9;
+  --bg-subtle: #ede4d2;
+  --text-main: #221d1c;
+  --text-muted: #6a5d59;
+  --text-faint: #998a85;
+  --primary: #b8412f;
+  --primary-hover: #9c3525;
+  --primary-soft: rgba(184, 65, 47, 0.10);
+  --accent: #e0adb0;
+  --accent-light: #f1d6d8;
+  --border-light: #e3d5be;
+  --border-faint: rgba(0, 0, 0, 0.06);
+  --hover-tint: rgba(0, 0, 0, 0.04);
   --font-urdu: 'Noto Nastaliq Urdu', 'Jameel Noori Nastaleeq', serif;
 }
 
 [data-theme="midnight"] {
-  --bg-color: #14171c; --bg-card: #1d2128;
-  --text-main: #e8e6e2; --text-muted: #9aa0a8;
-  --primary: #e87060; --primary-hover: #f4897a;
-  --accent: #4a3633; --accent-light: #2a2120;
-  --border-light: #2c313a;
-  --shadow-card-hover: 0 6px 20px rgba(0,0,0,.5);
-  --shadow-cover: 0 4px 16px rgba(0,0,0,.55);
-  --shadow-thumb: 0 2px 8px rgba(0,0,0,.45);
-  --rating-bg: #3a2d10; --rating-text: #f3c969;
-  --category-bg: #0f2c44; --category-text: #7cc7f5;
+  --bg-color: #0f1216;
+  --bg-card: #181c22;
+  --bg-subtle: #1f242c;
+  --text-main: #ebe9e4;
+  --text-muted: #98a0a8;
+  --text-faint: #6a7280;
+  --primary: #ec7666;
+  --primary-hover: #f48b7c;
+  --primary-soft: rgba(236, 118, 102, 0.13);
+  --accent: #4a3633;
+  --accent-light: #2a2120;
+  --border-light: #262c34;
+  --border-faint: rgba(255, 255, 255, 0.05);
+  --hover-tint: rgba(255, 255, 255, 0.05);
 }
 
 [data-theme="sepia-dark"] {
-  --bg-color: #1f1813; --bg-card: #2a201a;
-  --text-main: #efe5d6; --text-muted: #a8978a;
-  --primary: #e8826f; --primary-hover: #f29885;
-  --accent: #4d342f; --accent-light: #2f211c;
+  --bg-color: #1c1610;
+  --bg-card: #261d16;
+  --bg-subtle: #322619;
+  --text-main: #efe5d6;
+  --text-muted: #ad9c8d;
+  --text-faint: #847569;
+  --primary: #ec8775;
+  --primary-hover: #f29885;
+  --primary-soft: rgba(236, 135, 117, 0.13);
+  --accent: #4d342f;
+  --accent-light: #2f211c;
   --border-light: #3a2d24;
-  --shadow-card-hover: 0 6px 20px rgba(0,0,0,.55);
-  --shadow-cover: 0 4px 16px rgba(0,0,0,.6);
-  --shadow-thumb: 0 2px 8px rgba(0,0,0,.5);
-  --rating-bg: #3a2810; --rating-text: #f0c074;
-  --category-bg: #1a3140; --category-text: #82b8d8;
+  --border-faint: rgba(255, 255, 255, 0.05);
+  --hover-tint: rgba(255, 220, 180, 0.04);
 }
 
 [data-theme="ink"] {
-  --bg-color: #000000; --bg-card: #0d0d0e;
-  --text-main: #f0eeea; --text-muted: #8a8682;
-  --primary: #ed7561; --primary-hover: #f78a77;
-  --accent: #3a2825; --accent-light: #1a1413;
-  --border-light: #1f1d1c;
-  --shadow-card-hover: 0 6px 20px rgba(255,100,80,.08);
-  --shadow-cover: 0 4px 16px rgba(0,0,0,.8);
-  --shadow-thumb: 0 2px 8px rgba(0,0,0,.7);
-  --rating-bg: #2a1f08; --rating-text: #f5cd72;
-  --category-bg: #0a2230; --category-text: #6db8e0;
+  --bg-color: #000000;
+  --bg-card: #0c0c0d;
+  --bg-subtle: #161616;
+  --text-main: #f0eeea;
+  --text-muted: #8a8682;
+  --text-faint: #5a5754;
+  --primary: #ed7561;
+  --primary-hover: #f78a77;
+  --primary-soft: rgba(237, 117, 97, 0.14);
+  --accent: #3a2825;
+  --accent-light: #1a1413;
+  --border-light: #1c1c1d;
+  --border-faint: rgba(255, 255, 255, 0.04);
+  --hover-tint: rgba(255, 255, 255, 0.04);
 }
 
 body {
   margin: 0;
   padding: 0;
   background: var(--bg-color);
-  font-family: 'Inter', sans-serif;
+  font-family: 'Inter', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
 }
 
 .dt-window {
@@ -67,18 +84,23 @@ body {
   overflow: hidden;
 }
 
-/* Override shared CSS — shell height relative to viewport minus the 40px chrome */
+/* Override shared CSS — shell height relative to viewport minus the 36px
+   chrome. When the tab strip is mounted, `.dt-window--with-tabs` adds another
+   38px to the offset. */
 .dt-window-body .is-shell {
-  height: calc(100vh - 40px);
+  height: calc(100vh - 36px);
+}
+.dt-window--with-tabs .dt-window-body .is-shell {
+  height: calc(100vh - 36px - 38px);
 }
 
 .dt-window-chrome {
-  height: 40px;
-  background: var(--win-chrome-bg, color-mix(in srgb, var(--bg-color) 80%, var(--text-main) 4%));
-  border-bottom: 1px solid var(--border-light);
+  height: 36px;
+  background: color-mix(in srgb, var(--bg-color) 92%, var(--text-main) 4%);
+  border-bottom: 1px solid var(--border-faint);
   display: flex;
   align-items: center;
-  padding: 0 12px;
+  padding: 0 10px;
   user-select: none;
   flex-shrink: 0;
 }
@@ -92,7 +114,7 @@ body {
 }
 
 .dt-control-btn {
-  width: 46px;
+  width: 44px;
   height: 100%;
   display: flex;
   align-items: center;
@@ -100,16 +122,20 @@ body {
   background: transparent;
   border: none;
   color: var(--text-muted);
-  font-size: 13px;
+  font-size: 12px;
   cursor: pointer;
-  transition: background 0.1s, color 0.1s;
+  transition: background 0.10s, color 0.10s, transform 0.05s;
   padding: 0;
   line-height: 1;
 }
 
 .dt-control-btn:hover {
-  background: rgba(128, 128, 128, 0.18);
+  background: var(--hover-tint);
   color: var(--text-main);
+}
+
+.dt-control-btn:active {
+  background: color-mix(in srgb, var(--hover-tint) 200%, transparent);
 }
 
 .dt-control-btn--close:hover {
@@ -117,12 +143,16 @@ body {
   color: #ffffff;
 }
 
+.dt-control-btn--close:active {
+  background: #c81020;
+}
+
 .dt-breadcrumb {
   display: flex;
   align-items: center;
   gap: 6px;
   flex: 1;
-  padding: 0 4px;
+  padding: 0 6px;
   font-size: 12px;
   pointer-events: none;
 }
@@ -132,12 +162,13 @@ body {
   color: var(--text-main);
   cursor: pointer;
   pointer-events: auto;
+  transition: color 0.10s;
 }
 
 .dt-breadcrumb-root:hover { color: var(--primary); }
 
 .dt-breadcrumb-sep {
-  color: var(--text-muted);
+  color: var(--text-faint);
   font-size: 11px;
 }
 
@@ -154,6 +185,119 @@ body {
 .dt-window-body > * {
   flex: 1;
   min-height: 0;
+}
+
+/* ── Tab strip below window chrome ───────────────────────────── */
+.dt-tabstrip {
+  height: 38px;
+  background: color-mix(in srgb, var(--bg-color) 96%, var(--text-main) 2%);
+  border-bottom: 1px solid var(--border-faint);
+  display: flex;
+  align-items: stretch;
+  gap: 2px;
+  padding: 4px 8px 0;
+  user-select: none;
+  flex-shrink: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.dt-tabstrip::-webkit-scrollbar { display: none; }
+
+.dt-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 30px;
+  padding: 0 10px 0 8px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-bottom: none;
+  border-radius: 7px 7px 0 0;
+  color: var(--text-muted);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  max-width: 220px;
+  min-width: 0;
+  transition: background 0.10s, color 0.10s, border-color 0.10s;
+}
+
+.dt-tab:hover {
+  background: var(--hover-tint);
+  color: var(--text-main);
+}
+
+.dt-tab--active {
+  background: var(--bg-card);
+  border-color: var(--border-faint);
+  color: var(--text-main);
+  font-weight: 600;
+}
+
+.dt-tab-glyph {
+  font-family: var(--font-urdu, serif);
+  font-size: 16px;
+  color: var(--primary);
+  line-height: 1;
+  flex-shrink: 0;
+  width: 18px;
+  text-align: center;
+}
+
+.dt-tab-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  line-height: 1.15;
+}
+
+.dt-tab-title {
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dt-tab-subtitle {
+  font-size: 10px;
+  color: var(--text-faint);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dt-tab-close {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  color: var(--text-faint);
+  flex-shrink: 0;
+  opacity: 0;
+  transition: opacity 0.10s, background 0.10s;
+}
+
+.dt-tab:hover .dt-tab-close,
+.dt-tab--active .dt-tab-close {
+  opacity: 1;
+}
+
+.dt-tab-close:hover {
+  background: var(--hover-tint);
+  color: var(--text-main);
+}
+
+.dt-tabstrip-empty {
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  font-size: 12px;
+  color: var(--text-faint);
 }
 
 /* ── Resize handles ──────────────────────────────────────────── */

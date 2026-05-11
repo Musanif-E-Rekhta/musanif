@@ -1,12 +1,34 @@
 [workspace]
+members = ["packages/admin", "packages/desktop", "packages/mobile", "packages/ui", "packages/web"]
 resolver = "2"
-members = ["packages/ui", "packages/web", "packages/desktop", "packages/mobile"]
+
+[workspace.package]
+edition = "2021"
+license = "CC0-1.0"
+publish = false
+repository = "https://github.com/Musanif-E-Rekhta/musanif"
+version = "0.1.0"
 
 [workspace.dependencies]
+anyhow = { version = "1" }
+async-tungstenite = { version = "0.31", default-features = false, features = ["tokio-runtime", "tokio-rustls-webpki-roots"] }
+chrono = { version = "0.4", features = ["serde", "wasmbind"] }
+cynic = { version = "3.13", features = ["http-reqwest"] }
+cynic-codegen = { version = "3.13", features = ["rkyv"] }
 dioxus = { version = "0.7.1", features = [] }
+dioxus-free-icons = { version = "0.10.0", features = ["lucide"] }
+dioxus-primitives = { git = "https://github.com/DioxusLabs/components", default-features = false }
+dotenvy = { version = "0.15" }
+envy = { version = "0.4" }
+futures-util = { version = "0.3", default-features = false, features = ["std", "sink"] }
+gloo-net = { version = "0.6", default-features = false, features = ["websocket"] }
+keyring = { version = "3" }
+musanif-contracts = { path = "../musanif-contracts" }
+pulldown-cmark = { version = "0.12" }
+reqwest = { version = "0.12", default-features = true }
 serde = { version = "1", features = ["derive"] }
-envy = "0.4"
-dotenvy = "0.15"
-
-# workspace
+serde_json = { version = "1" }
+thiserror = { version = "2" }
+tracing = { version = "0.1" }
 ui = { path = "packages/ui" }
+web-sys = { version = "0.3", features = ["Storage", "Window"] }

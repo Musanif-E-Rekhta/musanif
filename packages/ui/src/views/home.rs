@@ -1,55 +1,143 @@
 use dioxus::prelude::*;
-use dioxus_free_icons::{icons::ld_icons::LdSearch, Icon};
 
-use crate::{api, components::Cover, models::Book, Route};
+use crate::{
+    api,
+    components::{Cover, FeatureCard, PageHeader, SearchInput},
+    models::{Book, FeaturedBook},
+    Route,
+};
 
 #[component]
 pub fn Home() -> Element {
-    let books = use_resource(move || async move { api::fetch_books(None, None).await });
+    if cfg!(feature = "mobile") {
+        return rsx! { crate::views::mobile::discover::MobileDiscover {} };
+    }
+
+    let query = use_signal(String::new);
+    let books = use_resource(move || async move {
+        let q = query.read().trim().to_string();
+        let q = if q.is_empty() { None } else { Some(q) };
+        api::fetch_books(q, None, None, None).await
+    });
+    let featured = use_resource(move || async move { api::fetch_featured().await });
 
     rsx! {
         div { class: "island is-main",
-            div { class: "is-main-header",
-                h2 { class: "is-main-title", "Discover" }
-                span { class: "is-main-subtitle", "Urdu literature, curated" }
-                div { class: "is-main-actions",
-                    div { class: "is-search",
-                        Icon { icon: LdSearch, width: 14, height: 14, class: "is-search-icon" }
-                        input { placeholder: "Search books, authors, ghazals…" }
+            PageHeader {
+                title: "Discover".to_string(),
+                subtitle: "Urdu literature, curated".to_string(),
+                actions: rsx! {
+                    SearchInput {
+                        placeholder: "Search books, authors, ghazals…".to_string(),
+                        value: query,
+                        show_kbd: true,
                     }
-                }
+                },
             }
 
             div { class: "is-main-body",
+                FeaturedSlot { featured: featured.clone() }
 
-
-                // Recently Added header
-                div { style: "display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 14px",
-                    h3 { style: "font-size: 14px; font-weight: 700; margin: 0; letter-spacing: -0.005em", "Recently Added" }
+                div { class: "section-head",
+                    h3 { class: "section-head-title", "Recently Added" }
                     button { class: "is-btn is-btn--ghost", "View all" }
                 }
 
-                match &*books.read() {
-                    None => rsx! { div { class: "state-loading", "Loading books…" } },
-                    Some(None) => rsx! {
-                        div { class: "state-error",
-                            p { "Could not reach the server." }
-                            p { class: "state-error-hint",
-                                "Make sure the backend is running on "
-                                code { "localhost:9678" }
-                            }
-                        }
-                    },
-                    Some(Some(books)) if books.is_empty() => rsx! {
-                        div { class: "state-empty", "No books found." }
-                    },
-                    Some(Some(books)) => rsx! {
+                BookGrid { books, query }
+            }
+        }
+    }
+}
+
+#[component]
+fn FeaturedSlot(featured: Resource<Option<FeaturedBook>>) -> Element {
+    let pick = featured
+        .read()
+        .as_ref()
+        .and_then(|opt| opt.as_ref())
+        .cloned();
+
+    let Some(pick) = pick else {
+        return rsx! { Fragment {} };
+    };
+
+    let book = pick.book;
+    let mono = book.title.chars().next().map(|c| c.to_string());
+    let blurb = pick
+        .blurb
+        .or_else(|| book.description.clone())
+        .or_else(|| book.summary.clone())
+        .unwrap_or_else(|| "A new arrangement, freshly annotated.".to_string());
+    let eyebrow = pick.eyebrow.unwrap_or_else(|| "Editor's Pick".to_string());
+    let title = pick.headline.unwrap_or_else(|| book.title.clone());
+    let slug = book.slug.clone();
+
+    rsx! {
+        FeatureCard {
+            eyebrow,
+            title,
+            blurb,
+            cover_urdu: Some(book.title.clone()),
+            cover_mono: mono,
+            actions: rsx! {
+                Link {
+                    to: Route::BookDetail { slug: slug.clone() },
+                    class: "is-btn is-btn--primary",
+                    "Start reading"
+                }
+                Link {
+                    to: Route::BookDetail { slug },
+                    class: "is-btn",
+                    "Details"
+                }
+            },
+        }
+    }
+}
+
+#[component]
+fn BookGrid(books: Resource<Option<Vec<Book>>>, query: Signal<String>) -> Element {
+    rsx! {
+        match &*books.read() {
+            None => rsx! { div { class: "state-loading", "Loading books…" } },
+            Some(None) => rsx! {
+                div { class: "state-error",
+                    p { "Could not reach the server." }
+                    p { class: "state-error-hint",
+                        "Make sure the backend is running on "
+                        code { "localhost:9678" }
+                    }
+                }
+            },
+            Some(Some(books)) => {
+                let q = query.read().to_lowercase();
+                let q = q.trim();
+                let filtered: Vec<&Book> = if q.is_empty() {
+                    books.iter().collect()
+                } else {
+                    books
+                        .iter()
+                        .filter(|b| {
+                            b.title.to_lowercase().contains(q)
+                                || b.authors
+                                    .as_deref()
+                                    .unwrap_or(&[])
+                                    .iter()
+                                    .any(|a| a.author.name.to_lowercase().contains(q))
+                        })
+                        .collect()
+                };
+
+                if filtered.is_empty() {
+                    rsx! { div { class: "state-empty", "Nothing matched \"{q}\"." } }
+                } else {
+                    rsx! {
                         div { class: "is-grid",
-                            for book in books {
+                            for book in filtered {
                                 BookCard { key: "{book.id}", book: book.clone() }
                             }
                         }
-                    },
+                    }
                 }
             }
         }

@@ -1,0 +1,148 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+
+env:
+  CARGO_TERM_COLOR: always
+  RUSTFLAGS: -D warnings
+
+jobs:
+  check:
+    name: Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+          targets: wasm32-unknown-unknown
+
+      - name: Cache dependencies
+        uses: Swatinem/rust-cache@v2
+
+      - name: Check formatting
+        run: cargo fmt --all -- --check
+
+      - name: Clippy (default targets)
+        run: cargo clippy --workspace --all-targets
+
+      - name: Clippy (wasm32 — ui + web)
+        run: cargo clippy --target wasm32-unknown-unknown --package ui --package web
+
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache dependencies
+        uses: Swatinem/rust-cache@v2
+
+      - name: Run tests
+        run: cargo test --workspace
+
+  build-web:
+    name: Build (web, wasm32)
+    runs-on: ubuntu-latest
+    needs: [check]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+
+      - name: Cache dependencies
+        uses: Swatinem/rust-cache@v2
+
+      - name: Build web (wasm)
+        run: cargo build --release --package web --target wasm32-unknown-unknown
+
+      - name: Build admin (wasm)
+        run: cargo build --release --package admin --target wasm32-unknown-unknown
+
+  build-desktop:
+    name: Build (desktop, linux)
+    runs-on: ubuntu-latest
+    needs: [check]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install desktop build deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libgtk-3-dev libayatana-appindicator3-dev librsvg2-dev libxdo-dev
+
+      - name: Cache dependencies
+        uses: Swatinem/rust-cache@v2
+
+      - name: Build desktop
+        run: cargo build --release --package desktop
+
+  check-mobile:
+    name: Check (mobile)
+    runs-on: ubuntu-latest
+    needs: [check]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache dependencies
+        uses: Swatinem/rust-cache@v2
+
+      - name: Check mobile package
+        run: cargo check --package mobile
+
+  schema-drift:
+    name: Schema drift
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout musanif
+        uses: actions/checkout@v4
+        with:
+          path: musanif
+
+      - name: Checkout musanif-contracts
+        uses: actions/checkout@v4
+        with:
+          repository: Musanif-E-Rekhta/musanif-contracts
+          path: musanif-contracts
+
+      - name: Checkout merk
+        uses: actions/checkout@v4
+        with:
+          repository: Musanif-E-Rekhta/merk
+          path: merk
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: merk
+
+      - name: Dump GraphQL schema from merk
+        working-directory: merk
+        run: cargo run --quiet --bin merk-dump-schema -- ../musanif-contracts/schema.graphql
+
+      - name: Verify pinned contract matches backend
+        working-directory: musanif-contracts
+        run: |
+          if ! git diff --exit-code schema.graphql; then
+            echo "::error::musanif-contracts/schema.graphql is out of sync with merk's GraphQL surface. Run 'make schema' from the parent repo and commit the result before re-running cynic codegen."
+            exit 1
+          fi

@@ -1,13 +1,15 @@
 [package]
+edition.workspace = true
+license.workspace = true
 name = "web"
-version = "0.1.0"
-edition = "2021"
-
-[dependencies]
-dioxus = { workspace = true, features = ["router"] }
-ui = { workspace = true }
+publish.workspace = true
+repository.workspace = true
+version.workspace = true
 
 [features]
 default = ["web"]
 web = ["dioxus/web"]
 
+[dependencies]
+dioxus = { workspace = true, features = ["router"] }
+ui.workspace = true

@@ -13,7 +13,7 @@ pub fn AuthorDetail(slug: String) -> Element {
 
     let books = use_resource(move || {
         let s = slug();
-        async move { api::fetch_author_books(s).await }
+        async move { api::fetch_books_by_author(s, None, None).await }
     });
 
     rsx! {
@@ -28,23 +28,20 @@ pub fn AuthorDetail(slug: String) -> Element {
                     }
 
                     div { class: "is-main-body",
-                        div {
-                            style: "display: flex; gap: 14px; padding: 14px; \
-                                    background: var(--bg-color); border-radius: 12px; \
-                                    align-items: center; margin-bottom: 24px",
-                            div {
-                                style: "width: 48px; height: 48px; border-radius: 50%; \
-                                        background: var(--accent-light); color: var(--primary); \
-                                        display: flex; align-items: center; justify-content: center; \
-                                        font-family: var(--font-urdu); fontSize: 20px; fontWeight: 700; flex-shrink: 0",
+                        div { class: "author-hero",
+                            div { class: "author-hero-avatar",
                                 "{author.name.chars().next().unwrap_or(' ')}"
                             }
                             div {
-                                p { style: "font-size: 14px; font-weight: 700; margin: 0 0 2px", "{author.name}" }
+                                p { class: "author-hero-name", "{author.name}" }
                                 if let Some(bio) = &author.bio {
-                                    p { style: "font-size: 11px; color: var(--text-muted); margin: 0", "{bio}" }
+                                    p { class: "author-hero-bio", "{bio}" }
                                 }
                             }
+                        }
+
+                        div { class: "section-head",
+                            h3 { class: "section-head-title", "Works" }
                         }
 
                         div { class: "is-grid",
@@ -89,7 +86,7 @@ fn AuthorBookCard(book: Book) -> Element {
                 if let Some(rating) = book.avg_rating {
                     span { class: "is-rating", "★ {rating:.1}" }
                 }
-                span { "{book.chapter_count} ch" }
+                span { class: "is-book-author", "{book.chapter_count} ch" }
             }
         }
     }
