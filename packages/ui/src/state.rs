@@ -28,3 +28,8 @@ pub static NAVIGATE_TO_BOOK_SLUG: GlobalSignal<Option<String>> = Signal::global(
 /// responds with `requires_2fa = true`. The Login2fa view reads this
 /// and clears it after a successful exchange.
 pub static CURRENT_2FA_CHALLENGE: GlobalSignal<Option<String>> = Signal::global(|| None);
+
+/// Discover's expanding search panel: open when true. Toggled by ⌘K
+/// (Ctrl+K on non-mac) or by clicking the header search affordance;
+/// closed by Escape, click-outside, or navigation.
+pub static SEARCH_OPEN: GlobalSignal<bool> = Signal::global(|| false);

@@ -35,6 +35,7 @@ mod macros;
 pub mod api;
 pub mod components;
 pub mod config;
+pub mod curation;
 pub mod error;
 pub mod graphql;
 pub mod mobile_shell;

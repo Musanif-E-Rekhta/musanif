@@ -20,8 +20,6 @@ pub fn ReadingPrefs() -> Element {
 
     rsx! {
         div {
-            h3 { class: "settings-h3", "Reading preferences" }
-
             div {
                 class: "settings-preview",
                 style: "font-size: {font_size()}px; line-height: {line_height() as f32 / 100.0}; font-family: {font_family}",

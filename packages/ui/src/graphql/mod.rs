@@ -17,6 +17,7 @@ mod schema;
 mod admin;
 mod auth;
 mod books;
+mod highlights;
 mod me;
 mod mutations;
 mod subscriptions;
@@ -39,13 +40,16 @@ pub use auth::{
 
 // ── Authenticated user ───────────────────────────────────────────────────────
 pub use me::{
-    change_password, delete_me, fetch_me, fetch_my_bookmarks, fetch_my_following,
-    fetch_my_highlights, fetch_my_reading_goal, fetch_my_reading_sessions, fetch_my_stats,
-    update_profile, upsert_reading_goal,
+    change_password, delete_me, fetch_me, fetch_my_2fa_status, fetch_my_bookmarks,
+    fetch_my_following, fetch_my_highlights, fetch_my_reading_goal, fetch_my_reading_sessions,
+    fetch_my_stats, update_profile, upsert_reading_goal,
 };
 
 // ── Mutations with input objects ─────────────────────────────────────────────
 pub use mutations::{record_reading_session, submit_book_review, upsert_bookmark};
+
+// ── Reader annotations ───────────────────────────────────────────────────────
+pub use highlights::{create_highlight, fetch_chapter_highlights};
 
 // ── Admin / pipeline ─────────────────────────────────────────────────────────
 pub use admin::{

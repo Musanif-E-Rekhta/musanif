@@ -21,7 +21,7 @@ fn main() {
         .unwrap();
     println!("cargo:rerun-if-changed={}", schema_path.display());
 
-    let profile = std::env::var("APP_PROFILE").unwrap_or_else(|_| "local".to_string());
+    let profile = std::env::var("BUILD_PROFILE").unwrap_or_else(|_| "local".to_string());
     let profile_env = workspace_root.join(format!(".env.{}", profile));
     let fallback_env = workspace_root.join(".env");
 
@@ -33,13 +33,13 @@ fn main() {
         println!("cargo:rerun-if-changed={}", fallback_env.display());
     }
 
-    println!("cargo:rerun-if-env-changed=APP_PROFILE");
+    println!("cargo:rerun-if-env-changed=BUILD_PROFILE");
 
     let api_base_url = std::env::var("API_BASE_URL")
         .unwrap_or_else(|_| "http://localhost:9678/api/v1".to_string());
     let graphql_url = std::env::var("GRAPHQL_URL")
         .unwrap_or_else(|_| "http://localhost:9678/api/graphql".to_string());
-    let app_env = std::env::var("APP_ENV").unwrap_or_else(|_| "local".to_string());
+    let app_env = std::env::var("APP_ENV").unwrap_or_else(|_| "development".to_string());
 
     println!("cargo:rustc-env=API_BASE_URL={api_base_url}");
     println!("cargo:rustc-env=GRAPHQL_URL={graphql_url}");

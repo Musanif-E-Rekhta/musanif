@@ -113,6 +113,15 @@ pub struct AuthPayload {
     pub user: User,
 }
 
+/// Current 2FA enrolment state for the signed-in user. `last_used_at`
+/// is an ISO-8601 string when present; rendering decides format.
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub struct TwoFactorStatus {
+    pub enabled: bool,
+    pub last_used_at: Option<String>,
+}
+
 /// Returned by `setup_2fa` — the only time the plaintext secret and
 /// recovery codes ever appear on the wire. The client renders the
 /// `otpauth_url` as a QR code; the user confirms enrolment by calling
@@ -122,6 +131,7 @@ pub struct AuthPayload {
 pub struct Setup2faPayload {
     pub secret: String,
     pub otpauth_url: String,
+    pub qr_svg: String,
     pub recovery_codes: Vec<String>,
 }
 

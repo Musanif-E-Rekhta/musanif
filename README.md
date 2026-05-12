@@ -35,7 +35,7 @@ cd packages/mobile     && dx serve --platform ios   # or android
 cd packages/admin      && dx serve --platform desktop
 ```
 
-Each shell reads `GRAPHQL_URL` and `API_BASE_URL` from `musanif/.env.local` at compile time (defaults to `http://localhost:9678/api/graphql` and `http://localhost:9678/api/v1`). Override per environment by setting `APP_PROFILE`.
+Each shell reads `GRAPHQL_URL` and `API_BASE_URL` from `musanif/.env.local` at compile time (defaults to `http://localhost:9678/api/graphql` and `http://localhost:9678/api/v1`). Override per environment by setting `BUILD_PROFILE` (e.g. `BUILD_PROFILE=prod` loads `musanif/.env.prod`).
 
 ## Token storage
 

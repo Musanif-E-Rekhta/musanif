@@ -2,7 +2,7 @@ use dioxus::prelude::*;
 
 use crate::{
     api,
-    components::{Cover, PageHeader, StatGrid, StatTile},
+    components::{toast, Cover, PageHeader, StatGrid, StatTile},
     models::ChapterSummary,
     Route,
 };
@@ -10,6 +10,7 @@ use crate::{
 #[component]
 pub fn BookDetail(slug: String) -> Element {
     let slug = use_memo(move || slug.clone());
+    let nav = use_navigator();
 
     let book = use_resource(move || {
         let s = slug();
@@ -20,6 +21,62 @@ pub fn BookDetail(slug: String) -> Element {
         let s = slug();
         async move { api::fetch_chapters(s).await }
     });
+
+    let mut shelving = use_signal(|| false);
+
+    let start_reading = move |book_slug: String| {
+        if let Some(Some(chs)) = &*chapters.read() {
+            if let Some(first) = chs.first() {
+                nav.push(Route::ChapterReader {
+                    book_slug,
+                    chapter_slug: first.slug.clone(),
+                });
+            } else {
+                toast::push(
+                    toast::ToastKind::Info,
+                    "No chapters",
+                    "This book has no chapters yet.",
+                );
+            }
+        }
+    };
+
+    let add_to_shelf = move |book_slug: String| {
+        if *shelving.read() {
+            return;
+        }
+        shelving.set(true);
+        spawn(async move {
+            let ok = api::upsert_bookmark(book_slug, "reading".into(), None, None)
+                .await
+                .is_some();
+            if ok {
+                toast::push(
+                    toast::ToastKind::Success,
+                    "Added to shelf",
+                    "This book is now in your reading list.",
+                );
+            }
+            shelving.set(false);
+        });
+    };
+
+    let share = move |book_slug: String| {
+        let url = format!("https://musanif.app/books/{book_slug}");
+        let e = document::eval(
+            r#"
+            const text = await dioxus.recv();
+            try { await navigator.clipboard.writeText(text); } catch (_) {}
+            return null;
+            "#,
+        );
+        let _ = e.send(url);
+        toast::push(
+            toast::ToastKind::Success,
+            "Link copied",
+            "A shareable link is now on your clipboard.",
+        );
+    };
 
     rsx! {
         match &*book.read() {
@@ -45,8 +102,25 @@ pub fn BookDetail(slug: String) -> Element {
                         },
                         subtitle: "Poetry · Classical".to_string(),
                         actions: rsx! {
-                            button { class: "is-btn", "Add to Shelf" }
-                            button { class: "is-btn", "Share" }
+                            button {
+                                class: "is-btn",
+                                disabled: *shelving.read(),
+                                onclick: {
+                                    let s = book.slug.clone();
+                                    let mut add = add_to_shelf;
+                                    move |_| add(s.clone())
+                                },
+                                if *shelving.read() { "Saving…" } else { "Add to Shelf" }
+                            }
+                            button {
+                                class: "is-btn",
+                                onclick: {
+                                    let s = book.slug.clone();
+                                    let sh = share;
+                                    move |_| sh(s.clone())
+                                },
+                                "Share"
+                            }
                         },
                     }
 
@@ -62,11 +136,33 @@ pub fn BookDetail(slug: String) -> Element {
                                     }
                                 }
                                 div { class: "is-detail-actions",
-                                    button { class: "is-btn is-btn--primary is-btn--block",
-                                        "Start reading"
+                                    {
+                                        let chapters_ready = matches!(
+                                            &*chapters.read(),
+                                            Some(Some(chs)) if !chs.is_empty()
+                                        );
+                                        rsx! {
+                                            button {
+                                                class: "is-btn is-btn--primary is-btn--block",
+                                                disabled: !chapters_ready,
+                                                onclick: {
+                                                    let s = book.slug.clone();
+                                                    let go = start_reading;
+                                                    move |_| go(s.clone())
+                                                },
+                                                "Start reading"
+                                            }
+                                        }
                                     }
-                                    button { class: "is-btn is-btn--block",
-                                        "Add to shelf"
+                                    button {
+                                        class: "is-btn is-btn--block",
+                                        disabled: *shelving.read(),
+                                        onclick: {
+                                            let s = book.slug.clone();
+                                            let mut add = add_to_shelf;
+                                            move |_| add(s.clone())
+                                        },
+                                        if *shelving.read() { "Saving…" } else { "Add to shelf" }
                                     }
                                 }
                             }

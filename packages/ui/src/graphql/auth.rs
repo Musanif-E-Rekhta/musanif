@@ -41,6 +41,7 @@ pub struct AuthPayload {
 pub struct Setup2FaPayload {
     pub secret: String,
     pub otpauth_url: String,
+    pub qr_svg: String,
     pub recovery_codes: Vec<String>,
 }
 
@@ -213,6 +214,7 @@ impl From<Setup2FaPayload> for models::Setup2faPayload {
         models::Setup2faPayload {
             secret: p.secret,
             otpauth_url: p.otpauth_url,
+            qr_svg: p.qr_svg,
             recovery_codes: p.recovery_codes,
         }
     }

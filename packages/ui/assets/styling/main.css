@@ -850,7 +850,11 @@ button { font: inherit; }
 }
 .font-sample-glyph {
   font-size: 28px;
-  line-height: 1.1;
+  line-height: 1.5;
+  min-height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   color: var(--text-main);
 }
 .font-sample-label {
@@ -911,12 +915,28 @@ button { font: inherit; }
   color: var(--primary);
 }
 .is-reader-body blockquote {
-  margin: 1.4em 0;
-  padding: 0.5em 0 0.5em 1.4em;
-  border-left: 2px solid var(--primary);
+  margin: 1.6em 1.2em 1.6em 1.2em;
+  padding: 0;
   color: var(--text-muted);
   font-style: italic;
+  font-family: var(--font-serif);
+  position: relative;
+  quotes: "\201C" "\201D" "\2018" "\2019";
 }
+.is-reader-body blockquote::before {
+  content: open-quote;
+  position: absolute;
+  left: -0.55em;
+  top: -0.18em;
+  font-family: var(--font-serif);
+  font-size: 2.4em;
+  line-height: 1;
+  color: var(--primary);
+  opacity: 0.7;
+  font-style: normal;
+}
+.is-reader-body blockquote p { margin: 0 0 0.6em; }
+.is-reader-body blockquote p:last-child { margin-bottom: 0; }
 .reader-nav {
   display: flex;
   justify-content: space-between;
@@ -1381,6 +1401,472 @@ button { font: inherit; }
 .about-list-item:hover { background: var(--hover-tint); }
 .about-list-arrow { color: var(--text-faint); }
 
+/* ═══════════════════════════════════════════════════════════════
+   SETTINGS · single-scroll layout with section islands + anchor row.
+   Supersedes the legacy .settings-layout / .settings-subnav pattern.
+   ═══════════════════════════════════════════════════════════════ */
+
+.settings-scroll {
+  scroll-behavior: smooth;
+  padding: 4px 28px 80px;
+  max-width: 780px;
+  /* No margin: 0 auto. On /settings the main island has no right-rail
+     sibling, so centering pushes content adrift in a wide column.
+     Left-anchored content reads as a tool, not a literary page. */
+}
+
+/* Honor reduced motion at the container level too. */
+@media (prefers-reduced-motion: reduce) {
+  .settings-scroll { scroll-behavior: auto; }
+}
+
+/* Fix #fff violation on the toggle thumb. Tints toward bg-card so it
+   reads as Fresh Folio rather than a foreign white pebble. */
+.settings-toggle-knob { background: var(--bg-card); }
+
+/* Anchor chip row. Replaces the lost sub-nav with non-modal in-page
+   navigation. Smooth-scrolls via JS in the click handler. */
+.settings-anchors {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 14px 0 26px;
+  border-bottom: 1px solid var(--border-faint);
+  margin-bottom: 24px;
+}
+.settings-anchor {
+  padding: 4px 11px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  text-decoration: none;
+  transition: color 100ms ease, background 100ms ease;
+}
+.settings-anchor:hover {
+  color: var(--text-main);
+  background: var(--hover-tint);
+}
+
+/* Section island wrapper. Each one is a quiet island: subtle border,
+   warm fill, generous spacing. The eyebrow above content carries the
+   section's identity; no inner h3 (eyebrow-or-header rule). */
+.settings-section-island {
+  background: var(--bg-card);
+  border: 1px solid var(--border-faint);
+  border-radius: 14px;
+  padding: 20px 24px;
+  margin-bottom: 22px;
+  scroll-margin-top: 24px;
+}
+.settings-section-eyebrow {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  margin: 0 0 18px;
+}
+.settings-section-body { display: flex; flex-direction: column; gap: 22px; }
+
+/* Identity header (avatar + name + email + plan + sign-out). */
+.settings-identity {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--border-faint);
+}
+.settings-identity-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--primary);
+  color: var(--bg-card);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.settings-identity-body { flex: 1; min-width: 0; }
+.settings-identity-name {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-main);
+  line-height: 1.2;
+}
+.settings-identity-meta {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.settings-identity-sep { color: var(--text-faint); }
+.settings-identity-plan { font-weight: 600; color: var(--text-main); }
+
+/* Signed-out gate card inside the Account section. */
+.settings-signed-out { display: flex; flex-direction: column; gap: 10px; }
+.settings-signed-out-headline {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-main);
+}
+.settings-signed-out-body {
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--text-muted);
+  line-height: 1.55;
+}
+.settings-signed-out-actions { display: flex; gap: 8px; margin-top: 6px; }
+
+/* Sub-blocks inside Account (Profile, Change password, 2FA, Danger). */
+.settings-subblock { display: flex; flex-direction: column; gap: 12px; }
+.settings-subblock-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.settings-subblock-title {
+  margin: 0;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+/* Inline save chip near the section title. Fades automatically would
+   need a JS timer; for now it stays visible until the next save. */
+.save-chip {
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--text-faint);
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: var(--bg-subtle);
+}
+.save-chip--saving { color: var(--text-muted); }
+.save-chip--saved {
+  color: var(--primary);
+  background: var(--primary-soft);
+}
+.save-chip--failed {
+  color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 14%, transparent);
+}
+
+/* Profile form wrapper carries a single onfocusout that triggers
+   auto-save when any field inside loses focus. No visual treatment. */
+.settings-profile-form { display: flex; flex-direction: column; gap: 0; }
+
+/* Per-pane wrapper: gives the controls inside a section consistent
+   vertical rhythm. Display/Library/Reading panes return a wrapper
+   div with this class so their toggle rows, theme grids, sliders,
+   etc. all sit on the same gap (no need to add margin-bottom per
+   control). */
+.settings-pane { display: flex; flex-direction: column; gap: 20px; }
+.settings-pane .settings-field { margin-bottom: 0; }
+.settings-pane .settings-range { margin-bottom: 0; }
+
+/* Profile textarea. */
+.settings-textarea {
+  width: 100%;
+  padding: 10px 12px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-light);
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 13.5px;
+  color: var(--text-main);
+  resize: vertical;
+  min-height: 72px;
+  transition: border-color 120ms ease;
+}
+.settings-textarea:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+.settings-textarea::placeholder { color: var(--text-faint); }
+
+/* Inline form error (password section). */
+.settings-inline-error {
+  margin: 6px 0 0;
+  font-size: 12px;
+  color: var(--primary);
+  font-weight: 500;
+}
+
+/* Row layout for toggle + label/hint pair (Display + Library). */
+.settings-toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.settings-toggle-row > div:first-child { flex: 1; min-width: 0; }
+.settings-toggle-row .settings-field-label { margin-bottom: 4px; }
+.settings-toggle-row .settings-field-hint { margin-top: 0; }
+
+/* 2FA status row. */
+.settings-twofa {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 12px 14px;
+  background: var(--bg-subtle);
+  border-radius: 10px;
+  border: 1px solid var(--border-faint);
+}
+.settings-twofa-status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.settings-twofa-icon { color: var(--text-muted); }
+.settings-twofa-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--border-light);
+}
+.settings-twofa-dot--on { background: var(--primary); }
+.settings-twofa-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+/* Danger zone: visually demoted (lower weight, top border separator). */
+.settings-danger {
+  padding-top: 18px;
+  border-top: 1px solid var(--border-faint);
+}
+.settings-danger .settings-subblock-title { color: var(--primary); }
+.settings-danger-body {
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--text-muted);
+  line-height: 1.55;
+}
+.settings-danger-confirm { display: flex; gap: 8px; align-items: center; }
+
+/* Library cache size inline tag. */
+.settings-cache-size {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+/* Display: theme check glyph (replaces inline style on the active card). */
+.settings-theme-check { color: var(--primary); font-weight: 700; }
+
+/* About block: stripped to brand mark + manifesto + meta. */
+.about-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 8px 0 4px;
+}
+.about-block .about-mark {
+  font-family: var(--font-urdu);
+  font-size: 44px;
+  color: var(--primary);
+  margin: 0;
+  line-height: 1;
+}
+.about-block .about-name {
+  margin: 12px 0 0;
+  font-family: var(--font-serif);
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-main);
+  letter-spacing: -0.005em;
+}
+.about-manifesto {
+  margin: 6px 0 0;
+  font-family: var(--font-serif);
+  font-size: 14px;
+  font-style: italic;
+  color: var(--text-muted);
+}
+.about-meta {
+  margin-top: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.about-meta-row {
+  margin: 0;
+  font-size: 11.5px;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+.about-meta-row--quiet { color: var(--text-faint); }
+
+/* Narrow-viewport collapse for the settings scroll container. */
+@media (max-width: 820px) {
+  .settings-scroll { padding: 4px 14px 60px; }
+  .settings-section-island { padding: 16px 16px; }
+  .settings-anchors { gap: 2px; padding: 10px 0 18px; margin-bottom: 16px; }
+  .settings-anchor { padding: 3px 8px; font-size: 10px; }
+  .settings-identity { gap: 10px; padding-bottom: 14px; }
+  .settings-toggle-row { gap: 12px; }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   TOTP setup · /settings/2fa specific styles.
+   Reuses the .settings-section-island vocabulary; adds QR, recovery
+   codes grid, and 6-digit code input treatments.
+   ═══════════════════════════════════════════════════════════════ */
+
+.totp-step-body {
+  margin: 0;
+  font-size: 13.5px;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+/* Already-enabled card sits inside a section island, with a slightly
+   warmer wash so it reads as a destination, not a step. */
+.totp-already-headline {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-main);
+}
+.totp-already-body {
+  margin: 0;
+  font-size: 13.5px;
+  color: var(--text-muted);
+  line-height: 1.55;
+}
+
+/* Section 1: QR + manual fallback laid out side-by-side on wide
+   screens, stacked on narrow. The QR keeps a true-white surround
+   regardless of theme so authenticators read it cleanly. */
+.totp-qr-row {
+  display: grid;
+  grid-template-columns: minmax(200px, 240px) 1fr;
+  gap: 22px;
+  align-items: start;
+}
+.totp-qr {
+  background: #fffdf9;
+  padding: 16px;
+  border-radius: 12px;
+  border: 1px solid var(--border-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.totp-qr svg {
+  width: 100%;
+  height: auto;
+  max-width: 200px;
+  display: block;
+}
+.totp-qr-side {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+.totp-manual {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.totp-manual summary {
+  cursor: pointer;
+  padding: 4px 0;
+  user-select: none;
+}
+.totp-manual summary:hover { color: var(--text-main); }
+.totp-secret {
+  display: inline-block;
+  margin-top: 6px;
+  padding: 6px 10px;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-faint);
+  border-radius: 6px;
+  font-family: 'Fira Code', ui-monospace, Menlo, monospace;
+  font-size: 12.5px;
+  color: var(--text-main);
+  letter-spacing: 0.04em;
+  word-break: break-all;
+}
+
+/* Section 2: recovery codes in a tabular grid. Two columns of five
+   on desktop, single column on narrow. Tabular numbers so the codes
+   align vertically and read as a list, not text. */
+.totp-codes {
+  list-style: none;
+  margin: 0;
+  padding: 16px;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-faint);
+  border-radius: 10px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 18px;
+}
+.totp-code {
+  font-family: 'Fira Code', ui-monospace, Menlo, monospace;
+  font-size: 13.5px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.06em;
+  color: var(--text-main);
+  user-select: all;
+}
+
+/* Section 3: 6-digit confirm field. Spaced letters and tabular nums
+   so the user can see the six positions clearly while typing. */
+.totp-confirm-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: flex-start;
+}
+.totp-code-input {
+  width: 220px;
+  padding: 12px 16px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-light);
+  border-radius: 8px;
+  font-family: 'Fira Code', ui-monospace, Menlo, monospace;
+  font-size: 22px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.28em;
+  text-align: center;
+  color: var(--text-main);
+  transition: border-color 120ms ease;
+}
+.totp-code-input::placeholder {
+  color: var(--text-faint);
+  letter-spacing: 0.28em;
+}
+.totp-code-input:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
+/* Narrow viewport: stack the QR row, single-column recovery grid. */
+@media (max-width: 720px) {
+  .totp-qr-row { grid-template-columns: 1fr; }
+  .totp-codes { grid-template-columns: 1fr; }
+  .totp-code-input { width: 100%; }
+}
+
 /* ── MOBILE ───────────────────────────────────────────────────── */
 .is-mob {
   height: 100%;
@@ -1666,4 +2152,1329 @@ button { font: inherit; }
 .toast--success .toast-glyph {
   background: color-mix(in srgb, var(--accent) 25%, transparent);
   color: var(--text-main);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   DISCOVER · search panel, Committed feature card, signed-out rail,
+   empty-state cards, skeletons, and tablet collapse.
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── Search trigger button in the header ──────────────────────── */
+.is-search--trigger {
+  cursor: pointer;
+  font-family: inherit;
+  color: var(--text-muted);
+  text-align: left;
+  width: 100%;
+}
+.is-search--trigger:hover {
+  background: var(--bg-card);
+  border-color: var(--border-light);
+  color: var(--text-main);
+}
+.is-search-trigger-placeholder {
+  flex: 1;
+  font-size: 13px;
+  color: var(--text-faint);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Search panel (the Committed expanded surface) ────────────── */
+.is-search-panel {
+  background: color-mix(in srgb, var(--primary) 8%, var(--bg-card));
+  border: 1px solid color-mix(in srgb, var(--primary) 18%, transparent);
+  border-radius: 12px;
+  padding: 14px 16px 18px;
+  margin-bottom: 18px;
+  box-shadow: var(--shadow-pop);
+  transform-origin: top center;
+  animation: is-search-panel-in 160ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.is-search-panel-input {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  background: var(--bg-card);
+  border-radius: 8px;
+  border: 1px solid color-mix(in srgb, var(--primary) 28%, transparent);
+  margin-bottom: 14px;
+}
+.is-search-panel-icon {
+  color: var(--primary);
+  flex-shrink: 0;
+}
+.is-search-panel-input input {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-family: inherit;
+  font-size: 15px;
+  color: var(--text-main);
+  padding: 4px 0;
+}
+.is-search-panel-input input::placeholder { color: var(--text-faint); }
+.is-search-panel-input input::-webkit-search-cancel-button { display: none; }
+.is-search-panel-close {
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-light);
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-family: inherit;
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--text-muted);
+  letter-spacing: 0.03em;
+  cursor: pointer;
+  transition: background 100ms ease, color 100ms ease;
+}
+.is-search-panel-close:hover {
+  background: var(--bg-card);
+  color: var(--text-main);
+}
+
+.is-search-panel-body { display: flex; flex-direction: column; gap: 14px; }
+
+.is-search-section { display: flex; flex-direction: column; gap: 6px; }
+.is-search-section-title {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  margin: 0;
+}
+.is-search-section-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.is-search-result {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 10px;
+  border-radius: 7px;
+  text-decoration: none;
+  color: inherit;
+  transition: background 100ms ease;
+}
+.is-search-result:hover { background: var(--hover-tint); }
+.is-search-result-mark {
+  width: 32px;
+  height: 32px;
+  border-radius: 7px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-urdu);
+  font-size: 16px;
+  color: var(--primary);
+  background: var(--primary-soft);
+}
+.is-search-result-mark--author {
+  background: var(--bg-subtle);
+  color: var(--text-main);
+}
+.is-search-result-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.is-search-result-title {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text-main);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.is-search-result-meta {
+  font-size: 11.5px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.is-search-result--skeleton { pointer-events: none; }
+.is-search-result--skeleton .is-search-result-mark { background: var(--bg-subtle); }
+
+/* Empty-query suggestions */
+.is-search-panel-hint {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.is-search-panel-hint-eyebrow {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  margin: 0;
+}
+.is-search-panel-suggestions { display: flex; flex-wrap: wrap; gap: 6px; }
+.is-search-panel-suggestion {
+  padding: 5px 11px;
+  border-radius: 6px;
+  background: var(--bg-card);
+  color: var(--text-main);
+  border: 1px solid var(--border-light);
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 100ms ease, border-color 100ms ease, color 100ms ease;
+}
+.is-search-panel-suggestion:hover {
+  background: var(--primary-soft);
+  border-color: color-mix(in srgb, var(--primary) 35%, transparent);
+  color: var(--primary);
+}
+
+.is-search-panel-empty {
+  padding: 12px 4px;
+  font-size: 13px;
+  color: var(--text-muted);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.is-search-panel-empty-hint { font-size: 11.5px; color: var(--text-faint); }
+
+@keyframes is-search-panel-in {
+  from { opacity: 0; transform: translateY(-6px) scale(0.985); }
+  to   { opacity: 1; transform: translateY(0)    scale(1); }
+}
+
+/* ── Feature card · Committed treatment ───────────────────────── */
+/* Overrides the base .is-feature background with a warmer terracotta
+   wash. The card stays the same shape; the surround commits to color. */
+.is-feature {
+  background: color-mix(in srgb, var(--primary) 12%, var(--bg-card));
+  border-color: color-mix(in srgb, var(--primary) 22%, transparent);
+}
+.is-feature .is-feature-eyebrow {
+  color: var(--primary-hover);
+}
+.is-feature .is-feature-title {
+  color: var(--text-main);
+}
+
+/* ── Discover content + scrim while search panel is open ──────── */
+.is-discover-content {
+  position: relative;
+  transition: opacity 160ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.is-discover-content--dimmed { opacity: 0.42; pointer-events: none; }
+.is-discover-scrim {
+  position: absolute;
+  inset: -10px -20px -20px -20px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  z-index: 2;
+  pointer-events: auto;
+}
+
+/* ── Catalog eyebrow above the grid ───────────────────────────── */
+.is-catalog-eyebrow {
+  margin: 24px 0 14px;
+}
+
+/* ── Sign-up rail (signed-out variant) ────────────────────────── */
+.is-signup-card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  background: color-mix(in srgb, var(--primary) 10%, var(--bg-card));
+  border-color: color-mix(in srgb, var(--primary) 22%, transparent);
+}
+.is-signup-headline {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--text-main);
+}
+.is-signup-actions { display: flex; flex-direction: column; gap: 6px; }
+.is-signup-secondary {
+  text-align: center;
+  font-size: 12px;
+  color: var(--text-muted);
+  text-decoration: none;
+  padding: 4px;
+  transition: color 100ms ease;
+}
+.is-signup-secondary:hover { color: var(--primary); }
+
+/* ── Rail empty-state cards (signed-in, nothing yet) ──────────── */
+.is-empty-card { display: flex; flex-direction: column; gap: 8px; }
+.is-empty-card .is-btn { align-self: flex-start; margin-top: 4px; }
+.is-empty-card-headline {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-main);
+  line-height: 1.3;
+}
+.is-empty-card-body {
+  margin: 0;
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+/* ── Skeleton placeholders ────────────────────────────────────── */
+.is-skeleton-block,
+.is-skeleton-line {
+  background: linear-gradient(
+    90deg,
+    var(--bg-subtle) 0%,
+    color-mix(in srgb, var(--bg-card) 60%, var(--bg-subtle)) 50%,
+    var(--bg-subtle) 100%
+  );
+  background-size: 200% 100%;
+  border-radius: 6px;
+  animation: is-skeleton-shimmer 1.8s ease-in-out infinite;
+}
+.is-skeleton-block {
+  width: 100%;
+  height: 100%;
+  border-radius: 9px;
+}
+.is-skeleton-line {
+  display: block;
+  height: 10px;
+  margin: 6px 0;
+}
+.is-skeleton-line--sm { width: 35%; }
+.is-skeleton-line--md { width: 60%; }
+.is-skeleton-line--lg { width: 80%; }
+.is-skeleton-line--xl { width: 90%; height: 18px; }
+
+.is-feature--skeleton .is-feature-cover { background: transparent; box-shadow: none; }
+.is-feature--skeleton > div:last-child {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+}
+
+.is-book--skeleton { pointer-events: none; }
+.is-book--skeleton .is-book-cover { box-shadow: none; }
+
+@keyframes is-skeleton-shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ── Responsive: Discover-only tablet/narrow collapse ─────────── */
+/* MobileShell handles real mobile; the selectors below catch tablet
+   + narrow desktop only on the Discover (3-col) variant so the Two
+   and Focus shell layouts on other routes stay intact. */
+@media (max-width: 1100px) {
+  .is-shell:not(.is-shell--two):not(.is-shell--focus) {
+    grid-template-columns: 200px 1fr;
+  }
+  .is-shell:not(.is-shell--two):not(.is-shell--focus) > div.is-rail-col {
+    display: none;
+  }
+}
+@media (max-width: 820px) {
+  .is-shell:not(.is-shell--two):not(.is-shell--focus) {
+    grid-template-columns: 1fr;
+    padding: 10px;
+    gap: 10px;
+  }
+  .is-shell:not(.is-shell--two):not(.is-shell--focus) > .is-nav {
+    display: none;
+  }
+  .is-feature { grid-template-columns: 1fr; }
+  .is-feature-cover { max-width: 160px; }
+  .is-grid { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 14px; }
+}
+
+/* ── Couplet of the week ────────────────────────────────────────
+   The signature element at the top of Discover. Reads as a hand-set
+   page of a literary magazine, not a card. Wide internal spacing,
+   no border, no background — the type does all the work. */
+.is-couplet {
+  margin: 4px 0 28px 0;
+  padding: 22px 0 24px 0;
+  border-bottom: 1px solid var(--border-soft, color-mix(in srgb, var(--text-main) 8%, transparent));
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.is-couplet-eyebrow {
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin: 0;
+}
+.is-couplet-urdu {
+  font-family: var(--font-urdu);
+  font-size: 30px;
+  line-height: 1.85;
+  color: var(--text-main);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  /* The block aligns to the right edge of the content column so the
+     RTL reading rhythm lands naturally; the eyebrow + roman stay at
+     the left to keep the page legible to readers who don't parse the
+     script. The asymmetry is the design. */
+  align-items: flex-end;
+  text-align: right;
+}
+.is-couplet-urdu-line {
+  margin: 0;
+  font-weight: 500;
+}
+.is-couplet-roman {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  max-width: 62ch;
+}
+.is-couplet-roman-line {
+  font-family: var(--font-serif, "Source Serif 4", "Source Serif Pro", Georgia, serif);
+  font-size: 14.5px;
+  font-style: italic;
+  line-height: 1.55;
+  color: var(--text-muted);
+  margin: 0;
+  letter-spacing: 0.005em;
+}
+.is-couplet-attribution {
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin: 4px 0 0 0;
+}
+
+/* ── Curated strip ──────────────────────────────────────────────
+   A horizontal scroll-snap rail of book cards. Reuses the .is-book
+   visual but lives inside a flex track with fixed-width children. */
+.is-strip {
+  margin: 28px 0 4px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.is-strip-eyebrow {
+  margin: 0;
+}
+.is-strip-track {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-padding-left: 2px;
+  /* Negative margin + matching padding lets cards bleed to the edge
+     of the main island without clipping the hover lift, while the
+     scrollbar still sits inside the island. */
+  margin: 0 -2px;
+  padding: 4px 2px 14px 2px;
+  /* Hide native scrollbars; the rhythm of the cards is the affordance. */
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--text-muted) 30%, transparent) transparent;
+}
+.is-strip-track::-webkit-scrollbar { height: 6px; }
+.is-strip-track::-webkit-scrollbar-track { background: transparent; }
+.is-strip-track::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--text-muted) 30%, transparent);
+  border-radius: 999px;
+}
+.is-strip-card {
+  flex: 0 0 152px;
+  scroll-snap-align: start;
+}
+.is-strip-card .is-book-cover { aspect-ratio: 4/5; }
+
+/* ── Empty corpus ───────────────────────────────────────────────
+   The pre-launch / zero-rows state. Sits in the same content column
+   as everything else, with an editorial register — not a generic
+   empty box and not an apology. */
+.is-empty-corpus {
+  margin: 12px 0 28px 0;
+  padding: 28px 0 8px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-width: 60ch;
+}
+.is-empty-corpus-eyebrow {
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin: 0;
+}
+.is-empty-corpus-headline {
+  font-family: var(--font-serif, "Source Serif 4", "Source Serif Pro", Georgia, serif);
+  font-size: 28px;
+  font-weight: 500;
+  line-height: 1.2;
+  color: var(--text-main);
+  margin: 0;
+  letter-spacing: -0.005em;
+}
+.is-empty-corpus-body {
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--text-main);
+  margin: 0;
+}
+.is-empty-corpus-body--quiet { color: var(--text-muted); }
+
+/* Narrow viewports tighten the couplet and shrink strip cards. */
+@media (max-width: 820px) {
+  .is-couplet { padding: 16px 0 18px 0; gap: 12px; }
+  .is-couplet-urdu { font-size: 24px; line-height: 1.75; }
+  .is-couplet-roman-line { font-size: 13.5px; }
+  .is-strip-card { flex: 0 0 132px; }
+  .is-empty-corpus-headline { font-size: 24px; }
+}
+
+/* ────────────────────────────────────────────────────────────────
+   READER (chapter_reader.rs)
+   Printed-page register. The .is-reader-stage owns the scroll; the
+   topbar + progress bar are sticky inside it so they pin to the top
+   without depending on viewport scroll. Type axes are driven by
+   `data-face / data-size / data-lh / data-measure` on the article,
+   which the rules below read into CSS custom properties.
+   ─────────────────────────────────────────────────────────────── */
+
+.is-reader-stage {
+  position: relative;
+  height: 100%;
+  overflow-y: auto;
+  background: var(--bg-color);
+  /* The stage owns the scroll. The .is-shell--focus grid item already
+     constrains height to 100dvh, so this height: 100% inherits the
+     column. */
+}
+
+/* The two top-edge bars (progress + topbar) are siblings inside the
+   stage. Both sticky at top: 0; the progress bar's z-index wins so its
+   2px hairline shows on top of the topbar's first 2px. */
+.is-reader-progress {
+  position: sticky;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: color-mix(in srgb, var(--text-muted) 14%, transparent);
+  z-index: 60;
+  /* Negative bottom margin pulls the topbar up so progress overlays
+     its top edge instead of taking its own row. */
+  margin-bottom: -2px;
+  overflow: hidden;
+}
+.is-reader-progress-fill {
+  height: 100%;
+  background: var(--primary);
+  transition: width 0.12s ease-out;
+}
+
+.is-reader-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 18px;
+  padding: 10px 28px;
+  background: color-mix(in srgb, var(--bg-color) 92%, transparent);
+  backdrop-filter: saturate(140%) blur(8px);
+  -webkit-backdrop-filter: saturate(140%) blur(8px);
+  border-bottom: 1px solid var(--border-faint, color-mix(in srgb, var(--text-main) 8%, transparent));
+  transition: transform 0.22s cubic-bezier(0.19, 1, 0.22, 1), opacity 0.18s ease;
+  transform: translateY(0);
+}
+.is-reader-topbar--hidden {
+  transform: translateY(-100%);
+  opacity: 0;
+  pointer-events: none;
+}
+.is-reader-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-main);
+  text-decoration: none;
+  padding: 6px 10px 6px 6px;
+  border-radius: 6px;
+  transition: background 0.12s ease;
+  min-width: 0;
+}
+.is-reader-back:hover { background: var(--hover-tint); }
+.is-reader-back-icon { flex: 0 0 auto; color: var(--text-muted); }
+.is-reader-back-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 36ch;
+}
+.is-reader-meta-line {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: var(--text-muted);
+  justify-self: center;
+  white-space: nowrap;
+}
+.is-reader-meta-chapter { color: var(--text-main); font-weight: 600; }
+.is-reader-meta-dot { opacity: 0.5; }
+.is-reader-saved-chip,
+.is-reader-failed-chip {
+  margin-left: 10px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+.is-reader-saved-chip {
+  background: color-mix(in srgb, var(--primary) 14%, transparent);
+  color: var(--primary);
+}
+.is-reader-failed-chip {
+  background: color-mix(in srgb, #b8412f 14%, transparent);
+  color: #b8412f;
+}
+.is-reader-actions {
+  display: inline-flex;
+  gap: 4px;
+  justify-self: end;
+}
+.is-reader-icon-btn {
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+.is-reader-icon-btn:hover { background: var(--hover-tint); color: var(--text-main); }
+.is-reader-icon-btn:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 1px;
+}
+.is-reader-icon-btn--active {
+  background: var(--primary-soft);
+  color: var(--primary);
+}
+
+/* ── Type / Theme sheet ────────────────────────────────────────── */
+.is-reader-sheet {
+  position: sticky;
+  top: 53px;
+  z-index: 45;
+  margin: 0 28px 0 auto;
+  width: min(320px, calc(100% - 56px));
+  padding: 18px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-faint, color-mix(in srgb, var(--text-main) 8%, transparent));
+  border-radius: 12px;
+  box-shadow: var(--shadow-pop, 0 12px 28px rgba(0, 0, 0, 0.18));
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  animation: is-reader-sheet-in 0.16s ease-out;
+}
+.is-reader-sheet--theme { width: min(280px, calc(100% - 56px)); }
+.is-reader-sheet-section {
+  margin: 6px 0 0;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.is-reader-sheet-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.is-reader-sheet-chip {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 8px 10px;
+  border-radius: 7px;
+  border: 1px solid var(--border-faint, color-mix(in srgb, var(--text-main) 10%, transparent));
+  background: transparent;
+  color: var(--text-main);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.1s ease, border-color 0.1s ease;
+}
+.is-reader-sheet-chip:hover { background: var(--hover-tint); }
+.is-reader-sheet-chip--active {
+  background: var(--primary-soft);
+  border-color: color-mix(in srgb, var(--primary) 40%, transparent);
+  color: var(--primary);
+}
+.is-reader-sheet-footer {
+  margin: 4px 0 0;
+  font-size: 11.5px;
+  font-style: italic;
+  color: var(--text-faint);
+}
+.is-reader-sheet-link {
+  color: var(--primary);
+  text-decoration: none;
+  font-weight: 600;
+}
+.is-reader-sheet-link:hover { text-decoration: underline; }
+
+/* Theme picker rows inside the theme sheet */
+.is-reader-theme-list { display: flex; flex-direction: column; gap: 6px; }
+.is-reader-theme-btn {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  background: transparent;
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--text-main);
+  text-align: left;
+  transition: background 0.1s ease;
+}
+.is-reader-theme-btn:hover { background: var(--hover-tint); }
+.is-reader-theme-btn--active {
+  background: var(--primary-soft);
+  border-color: color-mix(in srgb, var(--primary) 24%, transparent);
+}
+.is-reader-theme-swatch {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border: 1px solid color-mix(in srgb, var(--text-main) 18%, transparent);
+}
+.is-reader-theme-swatch-ink {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+}
+.is-reader-theme-name { flex: 1; font-weight: 500; }
+.is-reader-theme-check { color: var(--primary); font-weight: 700; }
+
+@keyframes is-reader-sheet-in {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── TOC drawer ────────────────────────────────────────────────── */
+.is-reader-drawer-overlay {
+  position: fixed;
+  inset: 0;
+  background: color-mix(in srgb, var(--text-main) 32%, transparent);
+  border: none;
+  padding: 0;
+  cursor: default;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.18s ease;
+  z-index: 70;
+}
+.is-reader-drawer-overlay--visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+.is-reader-drawer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: min(360px, 88vw);
+  background: var(--bg-card);
+  border-right: 1px solid var(--border-faint, color-mix(in srgb, var(--text-main) 8%, transparent));
+  box-shadow: 24px 0 60px rgba(0, 0, 0, 0.18);
+  display: flex;
+  flex-direction: column;
+  transform: translateX(-100%);
+  transition: transform 0.26s cubic-bezier(0.19, 1, 0.22, 1);
+  z-index: 80;
+}
+.is-reader-drawer--open { transform: translateX(0); }
+.is-reader-drawer-header {
+  padding: 22px 22px 14px;
+  border-bottom: 1px solid var(--border-faint, color-mix(in srgb, var(--text-main) 8%, transparent));
+}
+.is-reader-drawer-eyebrow {
+  margin: 0 0 6px;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.is-reader-drawer-title {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  color: var(--text-main);
+}
+.is-reader-drawer-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 4px 18px;
+}
+.is-reader-drawer-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+.is-reader-drawer-list--skeleton { padding: 14px 18px; gap: 10px; }
+.is-reader-drawer-row {
+  display: grid;
+  grid-template-columns: 22px 1fr auto;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 18px;
+  text-decoration: none;
+  color: var(--text-main);
+  transition: background 0.1s ease;
+}
+.is-reader-drawer-row:hover { background: var(--hover-tint); }
+.is-reader-drawer-row--current { background: var(--primary-soft); }
+.is-reader-drawer-mark {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 1.5px solid var(--text-muted);
+  justify-self: center;
+}
+.is-reader-drawer-mark--current {
+  background: var(--primary);
+  border-color: var(--primary);
+}
+.is-reader-drawer-mark--read {
+  background: color-mix(in srgb, var(--text-muted) 32%, transparent);
+  border-color: var(--text-muted);
+}
+.is-reader-drawer-mark--upcoming {
+  background: transparent;
+  border-color: color-mix(in srgb, var(--text-muted) 60%, transparent);
+}
+.is-reader-drawer-row-text {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.is-reader-drawer-row-num {
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  color: var(--text-faint);
+  text-transform: uppercase;
+}
+.is-reader-drawer-row-title {
+  font-family: var(--font-serif);
+  font-size: 14.5px;
+  line-height: 1.3;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.is-reader-drawer-row--current .is-reader-drawer-row-title { font-weight: 700; }
+.is-reader-drawer-row-time {
+  font-size: 11px;
+  color: var(--text-faint);
+  font-weight: 500;
+  white-space: nowrap;
+}
+.is-reader-drawer-empty {
+  padding: 22px;
+  color: var(--text-muted);
+  font-style: italic;
+  font-size: 14px;
+}
+
+/* ── Reader page (the article itself) ──────────────────────────── */
+.is-reader-page {
+  /* Typographic scale + line-height + measure resolve into CSS vars
+     so the body rules just read --reader-fs / --reader-lh / etc. */
+  --reader-fs-body: 17px;
+  --reader-lh-body: 1.78;
+  --reader-measure: 64ch;
+  --reader-face-body: var(--font-serif);
+
+  max-width: var(--reader-measure);
+  margin: 56px auto 80px;
+  padding: 0 28px;
+  font-family: var(--reader-face-body);
+}
+.is-reader-page--skeleton { gap: 16px; display: flex; flex-direction: column; }
+.is-reader-page--missing {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding-top: 120px;
+}
+.is-reader-missing-mark {
+  font-family: var(--font-urdu);
+  font-size: 56px;
+  line-height: 1;
+  color: var(--primary);
+  opacity: 0.7;
+}
+
+/* Face axis */
+.is-reader-page[data-face="serif"]    { --reader-face-body: var(--font-serif); }
+.is-reader-page[data-face="sans"]     { --reader-face-body: var(--font-sans, system-ui); }
+.is-reader-page[data-face="nastaliq"] { --reader-face-body: var(--font-urdu); }
+
+/* Size axis */
+.is-reader-page[data-size="s"]  { --reader-fs-body: 15px; }
+.is-reader-page[data-size="m"]  { --reader-fs-body: 17px; }
+.is-reader-page[data-size="l"]  { --reader-fs-body: 19px; }
+.is-reader-page[data-size="xl"] { --reader-fs-body: 21px; }
+
+/* Line-height axis */
+.is-reader-page[data-lh="snug"]    { --reader-lh-body: 1.55; }
+.is-reader-page[data-lh="regular"] { --reader-lh-body: 1.78; }
+.is-reader-page[data-lh="loose"]   { --reader-lh-body: 2.05; }
+
+/* Measure axis */
+.is-reader-page[data-measure="narrow"]  { --reader-measure: 52ch; }
+.is-reader-page[data-measure="regular"] { --reader-measure: 64ch; }
+.is-reader-page[data-measure="wide"]    { --reader-measure: 72ch; }
+.is-reader-page[data-measure="xwide"]   { --reader-measure: 80ch; }
+
+.is-reader-header {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 32px;
+}
+.is-reader-header-eyebrow {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.is-reader-header-meta {
+  margin: 6px 0 0;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-faint);
+  letter-spacing: 0.04em;
+}
+
+/* Override the older .is-reader-body / h1 / lede with measure-aware
+   variants. The earlier rules still apply for fallbacks; these win
+   inside .is-reader-page. */
+.is-reader-page .is-reader-h1 {
+  font-family: var(--font-serif);
+  font-size: clamp(28px, 2.6vw, 34px);
+  font-weight: 600;
+  letter-spacing: -0.018em;
+  line-height: 1.12;
+  margin: 0;
+  color: var(--text-main);
+}
+.is-reader-page .is-reader-lede {
+  font-family: var(--font-serif);
+  font-size: 17px;
+  font-style: italic;
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin: 4px 0 0;
+}
+
+.is-reader-page .is-reader-body {
+  font-family: var(--reader-face-body);
+  font-size: var(--reader-fs-body);
+  line-height: var(--reader-lh-body);
+  color: var(--text-main);
+}
+.is-reader-page .is-reader-body p { margin: 0 0 1.25em; }
+.is-reader-page .is-reader-body p:first-child::first-letter {
+  font-size: 3.6em;
+  float: left;
+  line-height: 0.85;
+  margin: 0.04em 0.10em -0.05em 0;
+  font-weight: 600;
+  color: var(--primary);
+  font-family: var(--font-serif);
+}
+/* The drop-cap is a Latin-typographic affordance; suppress it on
+   RTL-first chapters where the first paragraph reads right-to-left. */
+.is-reader-page .is-reader-body p.is-rtl-paragraph:first-child::first-letter {
+  font-size: inherit;
+  float: none;
+  margin: 0;
+  font-weight: inherit;
+  color: inherit;
+}
+
+/* RTL / Nastaliq paragraph rendering: detected at render time by the
+   highlight bridge JS. Letter-spacing and line-height tuned for
+   Nastaliq's vertical stack. */
+.is-reader-page .is-reader-body p.is-rtl-paragraph {
+  font-family: var(--font-urdu);
+  line-height: 2.2;
+  font-size: calc(var(--reader-fs-body) + 4px);
+  text-align: right;
+  direction: rtl;
+}
+
+/* Headings inside markdown bodies (h2-h4) get serif typesetting */
+.is-reader-page .is-reader-body h2,
+.is-reader-page .is-reader-body h3,
+.is-reader-page .is-reader-body h4 {
+  font-family: var(--font-serif);
+  font-weight: 600;
+  margin: 1.8em 0 0.6em;
+  letter-spacing: -0.01em;
+  color: var(--text-main);
+}
+.is-reader-page .is-reader-body h2 { font-size: 1.45em; }
+.is-reader-page .is-reader-body h3 { font-size: 1.22em; }
+.is-reader-page .is-reader-body h4 { font-size: 1.06em; }
+
+/* Footnote refs (pulldown_cmark emits sup > a) */
+.is-reader-page .is-reader-body sup a {
+  text-decoration: none;
+  font-size: 0.78em;
+  padding: 0 2px;
+  color: var(--primary);
+  font-weight: 600;
+}
+.is-reader-page .is-reader-body sup a:hover { text-decoration: underline; }
+
+/* ── Highlights ────────────────────────────────────────────────── */
+.is-reader-page .is-reader-body mark.is-highlight {
+  background: transparent;
+  color: inherit;
+  padding: 0.04em 0.05em;
+  border-radius: 1px;
+  cursor: pointer;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+.is-reader-page .is-reader-body mark.is-highlight--warm {
+  background: color-mix(in srgb, #f0c14a 28%, transparent);
+}
+.is-reader-page .is-reader-body mark.is-highlight--terracotta {
+  background: color-mix(in srgb, var(--primary) 22%, transparent);
+}
+.is-reader-page .is-reader-body mark.is-highlight--sage {
+  background: color-mix(in srgb, #7faf85 28%, transparent);
+}
+.is-reader-page .is-reader-body mark.is-highlight--lavender {
+  background: color-mix(in srgb, #9d8ec9 28%, transparent);
+}
+
+/* ── Highlight toolbar (floats over selection) ─────────────────── */
+.is-highlight-toolbar {
+  position: fixed;
+  transform: translate(-50%, 0);
+  z-index: 90;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 6px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-faint, color-mix(in srgb, var(--text-main) 8%, transparent));
+  border-radius: 10px;
+  box-shadow: var(--shadow-pop, 0 12px 28px rgba(0, 0, 0, 0.22));
+  animation: is-highlight-toolbar-in 0.12s ease-out;
+}
+@keyframes is-highlight-toolbar-in {
+  from { opacity: 0; transform: translate(-50%, -2px); }
+  to   { opacity: 1; transform: translate(-50%, 0); }
+}
+.is-highlight-toolbar-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.is-highlight-toolbar-divider {
+  width: 1px;
+  height: 20px;
+  background: color-mix(in srgb, var(--text-main) 10%, transparent);
+  margin: 0 2px;
+}
+.is-highlight-toolbar-action {
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: var(--text-main);
+  font-size: 13px;
+  font-weight: 500;
+}
+.is-highlight-toolbar-action:hover { background: var(--hover-tint); }
+.is-highlight-swatch {
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
+  border: 1px solid color-mix(in srgb, var(--text-main) 10%, transparent);
+  cursor: pointer;
+  padding: 0;
+  transition: transform 0.1s ease;
+}
+.is-highlight-swatch:hover { transform: scale(1.08); }
+.is-highlight-swatch.is-highlight--warm       { background: #f0c14a; }
+.is-highlight-swatch.is-highlight--terracotta { background: var(--primary); }
+.is-highlight-swatch.is-highlight--sage       { background: #7faf85; }
+.is-highlight-swatch.is-highlight--lavender   { background: #9d8ec9; }
+
+.is-highlight-note {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 260px;
+  padding: 4px;
+}
+.is-highlight-note-input {
+  font-family: var(--font-serif);
+  font-size: 14px;
+  line-height: 1.5;
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--border-faint, color-mix(in srgb, var(--text-main) 12%, transparent));
+  background: var(--bg-color);
+  color: var(--text-main);
+  resize: vertical;
+  min-height: 64px;
+}
+.is-highlight-note-input:focus {
+  outline: 2px solid var(--primary);
+  outline-offset: -1px;
+}
+.is-highlight-note-actions {
+  display: flex;
+  gap: 6px;
+  justify-content: flex-end;
+}
+
+/* ── Chapter end ───────────────────────────────────────────────── */
+.is-reader-end {
+  margin-top: 56px;
+  padding-top: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  align-items: flex-start;
+}
+.is-reader-end-rule {
+  width: 80px;
+  height: 1px;
+  background: var(--border-faint, color-mix(in srgb, var(--text-main) 12%, transparent));
+  margin-bottom: 16px;
+}
+.is-reader-end-eyebrow {
+  margin: 0;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.is-reader-end-link {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 14px;
+  text-decoration: none;
+  color: var(--text-main);
+  padding: 6px 0;
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.12s ease;
+}
+.is-reader-end-link:hover { border-bottom-color: var(--primary); }
+.is-reader-end-title {
+  font-family: var(--font-serif);
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.is-reader-end-title--terminal {
+  margin: 0;
+  font-style: italic;
+  color: var(--text-muted);
+}
+.is-reader-end-arrow {
+  font-size: 18px;
+  color: var(--primary);
+}
+.is-reader-end-back {
+  margin-top: 6px;
+  font-size: 13px;
+  color: var(--text-muted);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+}
+.is-reader-end-back:hover {
+  color: var(--text-main);
+  border-bottom-color: var(--text-muted);
+}
+
+/* ── Keyboard shortcuts overlay ─────────────────────────────────── */
+.is-kbd-scrim {
+  position: fixed;
+  inset: 0;
+  background: color-mix(in srgb, var(--text-main) 36%, transparent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 95;
+  animation: is-kbd-fade-in 0.14s ease-out;
+}
+@keyframes is-kbd-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+.is-kbd-overlay {
+  background: var(--bg-card);
+  border: 1px solid var(--border-faint, color-mix(in srgb, var(--text-main) 8%, transparent));
+  border-radius: 14px;
+  box-shadow: var(--shadow-pop, 0 30px 60px rgba(0, 0, 0, 0.32));
+  padding: 28px 32px;
+  min-width: 360px;
+  max-width: 460px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  animation: is-kbd-pop-in 0.18s cubic-bezier(0.19, 1, 0.22, 1);
+}
+@keyframes is-kbd-pop-in {
+  from { opacity: 0; transform: scale(0.97); }
+  to   { opacity: 1; transform: scale(1); }
+}
+.is-kbd-eyebrow {
+  margin: 0;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.is-kbd-title {
+  margin: 0 0 8px;
+  font-family: var(--font-serif);
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+}
+.is-kbd-list {
+  margin: 0;
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  row-gap: 8px;
+  column-gap: 18px;
+}
+.is-kbd-row { display: contents; }
+.is-kbd-keys {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 5px;
+  background: color-mix(in srgb, var(--text-main) 6%, transparent);
+  color: var(--text-main);
+  width: max-content;
+  white-space: nowrap;
+}
+.is-kbd-label {
+  margin: 0;
+  font-size: 14px;
+  color: var(--text-main);
+  line-height: 1.4;
+}
+.is-kbd-footer {
+  margin: 6px 0 0;
+  font-size: 12.5px;
+  font-style: italic;
+  color: var(--text-faint);
+}
+.is-kbd-inline {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--text-main) 6%, transparent);
+  font-style: normal;
+}
+
+/* ── Responsive ────────────────────────────────────────────────── */
+@media (max-width: 820px) {
+  .is-reader-topbar { padding: 8px 16px; gap: 10px; }
+  .is-reader-back-title { max-width: 24ch; }
+  .is-reader-meta-line { display: none; }
+  .is-reader-sheet { margin: 0 16px 0 auto; width: calc(100% - 32px); }
+  .is-reader-page { padding: 0 18px; margin: 36px auto 56px; }
+  .is-reader-end-title { font-size: 19px; }
+  .is-kbd-overlay { min-width: unset; width: calc(100% - 32px); padding: 22px 22px; }
+}
+
+/* ── Reduced motion ────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .is-reader-topbar,
+  .is-reader-drawer,
+  .is-reader-progress-fill,
+  .is-reader-sheet,
+  .is-highlight-toolbar,
+  .is-kbd-overlay,
+  .is-kbd-scrim { transition: none; animation: none; }
+}
+
+/* ── Reduced motion: kill the expansion + shimmer animations ──── */
+@media (prefers-reduced-motion: reduce) {
+  .is-search-panel { animation: none; }
+  .is-discover-content { transition: none; }
+  .is-skeleton-block,
+  .is-skeleton-line { animation: none; }
+  .is-strip-track { scroll-behavior: auto; }
 }

@@ -508,6 +508,14 @@ pub async fn fetch_my_reading_goal() -> Option<models::ReadingGoal> {
     run(op).await.and_then(|d| d.my_reading_goal.map(Into::into))
 }
 
+pub async fn fetch_my_2fa_status() -> Option<models::TwoFactorStatus> {
+    let op = My2FaStatusQuery::build(());
+    run(op).await.map(|d| models::TwoFactorStatus {
+        enabled: d.my_2fa_status.enabled,
+        last_used_at: d.my_2fa_status.last_used_at.map(|t| t.to_rfc3339()),
+    })
+}
+
 pub async fn update_profile(
     input: models::UpdateProfileInput,
 ) -> Option<models::Profile> {
