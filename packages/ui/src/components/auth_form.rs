@@ -22,7 +22,14 @@ pub fn AuthShell(
         div { class: "login-page",
             div { class: "login-card",
                 div { class: "login-header",
-                    h1 { class: "login-brand", "مصنف" }
+                    Link {
+                        to: Route::Home {},
+                        class: "login-brand",
+                        "aria-label": "Musanif home",
+                        dir: "rtl",
+                        lang: "ur",
+                        "مصنف"
+                    }
                     p { class: "login-tagline", "{tagline}" }
                 }
 

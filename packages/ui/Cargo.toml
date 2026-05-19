@@ -32,8 +32,10 @@ tracing.workspace = true
 async-tungstenite.workspace = true
 keyring.workspace = true
 reqwest = { workspace = true, features = ["json"] }
+tokio.workspace = true
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 gloo-net.workspace = true
+gloo-timers.workspace = true
 reqwest = { workspace = true, default-features = false, features = ["json"] }
 web-sys.workspace = true

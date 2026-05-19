@@ -15,11 +15,15 @@ pub fn Sidebar() -> Element {
 
     rsx! {
         aside { class: "adm-sidebar",
-            div { class: "adm-side-brand",
-                span { class: "adm-side-mark", "مصنف" }
+            button {
+                class: "adm-side-brand",
+                r#type: "button",
+                onclick: move |_| { *CURRENT_JOB.write() = None; },
+                "aria-label": "Clear job selection and return to queue overview",
+                span { class: "adm-side-mark", dir: "rtl", lang: "ur", "مصنف" }
                 div {
                     div { class: "adm-side-name", "Musanif" }
-                    div { class: "adm-side-role", "Admin Console" }
+                    div { class: "adm-side-role", "Admin" }
                 }
             }
 

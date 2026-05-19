@@ -23,6 +23,13 @@ pub struct BookGql {
     pub review_count: i32,
     pub chapter_count: i32,
     pub is_published: bool,
+    pub authors: Vec<BookAuthorEdgeGql>,
+}
+
+#[derive(cynic::QueryFragment, Debug, Clone)]
+pub struct BookAuthorEdgeGql {
+    pub author: BookAuthorGql,
+    pub role: String,
 }
 
 #[derive(cynic::QueryFragment, Debug, Clone)]
@@ -244,6 +251,7 @@ pub struct WordTranslationsQuery {
 
 impl From<BookGql> for models::Book {
     fn from(b: BookGql) -> Self {
+        let authors = b.authors.into_iter().map(Into::into).collect::<Vec<_>>();
         models::Book {
             id: b.id,
             title: b.title,
@@ -259,11 +267,20 @@ impl From<BookGql> for models::Book {
             review_count: b.review_count,
             chapter_count: b.chapter_count,
             is_published: b.is_published,
-            authors: None,
+            authors: Some(authors),
             categories: None,
             tags: None,
             created_at: None,
             updated_at: None,
+        }
+    }
+}
+
+impl From<BookAuthorEdgeGql> for models::BookAuthor {
+    fn from(e: BookAuthorEdgeGql) -> Self {
+        models::BookAuthor {
+            author: models::Author::from(e.author),
+            role: e.role,
         }
     }
 }

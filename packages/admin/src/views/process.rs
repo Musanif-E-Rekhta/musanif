@@ -1,6 +1,9 @@
 use dioxus::prelude::*;
-use dioxus_free_icons::{icons::ld_icons::LdCheck, Icon};
-use ui::api::{self, JobEventSub, JobLogEntry, PipelineStep};
+use dioxus_free_icons::{
+    icons::ld_icons::{LdCheck, LdPlay},
+    Icon,
+};
+use ui::api::{self, IngestionJob, JobEventSub, JobLogEntry, PipelineStep, UsageOverview};
 
 use crate::state::{CURRENT_MODEL, CURRENT_PROVIDER};
 
@@ -43,7 +46,9 @@ const PROVIDERS: &[Provider] = &[
 ];
 
 #[component]
-pub fn ProcessStage(job_id: String) -> Element {
+pub fn ProcessStage(job: IngestionJob) -> Element {
+    let job_id = job.id.clone();
+    let job_stage = job.stage as u8;
     let provider_id = *CURRENT_PROVIDER.read();
     let model_id = *CURRENT_MODEL.read();
     let active_provider = PROVIDERS
@@ -57,6 +62,14 @@ pub fn ProcessStage(job_id: String) -> Element {
     // the UI something to render while the socket is opening.
     let mut steps = use_signal::<Option<Vec<PipelineStep>>>(|| None);
     let mut log = use_signal::<Option<Vec<JobLogEntry>>>(|| None);
+
+    // Locally-tracked "Start processing" affordance: only meaningful while
+    // the job hasn't advanced past stage 1 on the backend. After the
+    // mutation fires we hide the button immediately; the live subscription
+    // and the next job-fetch will drive the rest of the state.
+    let mut started_locally = use_signal(|| false);
+    let mut starting = use_signal(|| false);
+    let needs_start = job_stage <= 1 && !*started_locally.read();
 
     {
         let id = job_id.clone();
@@ -98,11 +111,40 @@ pub fn ProcessStage(job_id: String) -> Element {
                         span {} span {} span {}
                     }
                     div { class: "adm-now-running-meta",
-                        div { class: "adm-now-running-title", "Processing job" }
-                        div { class: "adm-now-running-sub", "Live pipeline status below" }
+                        div { class: "adm-now-running-title",
+                            if needs_start { "Ready to process" } else { "Processing job" }
+                        }
+                        div { class: "adm-now-running-sub",
+                            if needs_start {
+                                "Start to run the pipeline with the model selected on the right."
+                            } else {
+                                "Live pipeline status below."
+                            }
+                        }
                     }
-                    button { class: "is-btn", "Pause" }
-                    button { class: "is-btn", "Cancel" }
+                    if needs_start {
+                        button {
+                            class: "is-btn is-btn--primary",
+                            r#type: "button",
+                            disabled: *starting.read(),
+                            onclick: {
+                                let id = job_id.clone();
+                                move |_| {
+                                    let id = id.clone();
+                                    starting.set(true);
+                                    spawn(async move {
+                                        let ok = api::start_ingestion_job(id).await;
+                                        starting.set(false);
+                                        if ok {
+                                            started_locally.set(true);
+                                        }
+                                    });
+                                }
+                            },
+                            Icon { icon: LdPlay, width: 14, height: 14 }
+                            if *starting.read() { "Starting…" } else { "Start processing" }
+                        }
+                    }
                 }
 
                 PipelineList { steps }
@@ -153,28 +195,67 @@ pub fn ProcessStage(job_id: String) -> Element {
                     }
                 }
 
-                div { class: "adm-card",
-                    div { class: "adm-card-title", "Pipeline settings" }
-                    div { class: "adm-settings",
-                        SettingRow {
-                            label: "OCR for scanned pages",
-                            sub: "Adds ~30s per 100 pages",
-                            on: true,
-                        }
-                        SettingRow {
-                            label: "Auto-flag low confidence",
-                            sub: "Threshold < 70%",
-                            on: true,
-                        }
-                        SettingRow {
-                            label: "Generate audio narration",
-                            sub: "Urdu TTS, 1 voice",
-                            on: false,
-                        }
+                UsageCard {}
+            }
+        }
+    }
+}
+
+#[component]
+fn UsageCard() -> Element {
+    let usage = use_resource(move || async move { api::fetch_admin_usage(None).await });
+    rsx! {
+        div { class: "adm-card",
+            div { class: "adm-card-title", "Usage & cost" }
+            match &*usage.read() {
+                None => rsx! { div { class: "adm-cost-row", "Loading…" } },
+                Some(None) => rsx! { div { class: "adm-cost-row", "Couldn't load usage." } },
+                Some(Some(u)) => render_usage(u.clone()),
+            }
+        }
+    }
+}
+
+fn render_usage(u: UsageOverview) -> Element {
+    let pct = (u.budget_used_pct * 100.0).clamp(0.0, 100.0);
+    let width_style = format!("width: {pct:.0}%");
+    let tokens = format_tokens(u.tokens_used);
+    rsx! {
+        div { class: "adm-card-cost",
+            div { class: "adm-cost-row",
+                span { "Tokens used" }
+                span { class: "adm-cost-num", "{tokens}" }
+            }
+            div { class: "adm-cost-row",
+                span { "Est. cost · {u.period}" }
+                span { class: "adm-cost-num", "${u.est_cost_usd:.2}" }
+            }
+            div { class: "adm-cost-budget",
+                div { class: "adm-cost-row",
+                    span { "Monthly budget" }
+                    span {
+                        strong { "${u.monthly_budget_usd:.0}" }
                     }
+                }
+                div { class: "adm-cost-bar",
+                    div { class: "adm-cost-bar-fill", style: "{width_style}" }
+                }
+                div { class: "adm-cost-pct",
+                    "{pct:.0}% used"
                 }
             }
         }
+    }
+}
+
+fn format_tokens(n: i32) -> String {
+    let v = n as f64;
+    if v >= 1_000_000.0 {
+        format!("{:.1}M", v / 1_000_000.0)
+    } else if v >= 1_000.0 {
+        format!("{:.1}K", v / 1_000.0)
+    } else {
+        n.to_string()
     }
 }
 
@@ -313,16 +394,3 @@ fn LogRow(line: JobLogEntry) -> Element {
     }
 }
 
-#[component]
-fn SettingRow(label: &'static str, sub: &'static str, on: bool) -> Element {
-    let toggle_class = if on { "adm-toggle is-on" } else { "adm-toggle" };
-    rsx! {
-        div { class: "adm-setting-row",
-            div {
-                div { class: "adm-setting-label", "{label}" }
-                div { class: "adm-setting-sub", "{sub}" }
-            }
-            div { class: "{toggle_class}", span {} }
-        }
-    }
-}

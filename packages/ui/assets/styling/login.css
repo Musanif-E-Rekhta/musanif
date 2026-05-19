@@ -25,13 +25,23 @@
 }
 
 .login-brand {
+  display: inline-block;
   font-family: var(--font-urdu);
   font-size: 2.4rem;
   font-weight: 700;
   color: var(--primary);
   margin: 0 0 0.35rem;
-  line-height: 1;
+  line-height: 1.5;
   letter-spacing: -0.01em;
+  text-decoration: none;
+  cursor: pointer;
+  transition: color 0.10s ease;
+}
+.login-brand:hover { color: var(--primary-hover); }
+.login-brand:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 4px;
+  border-radius: 6px;
 }
 
 .login-tagline {
@@ -114,3 +124,4 @@
 .login-footer-link:hover {
   text-decoration: underline;
 }
+

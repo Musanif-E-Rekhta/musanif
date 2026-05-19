@@ -1,6 +1,6 @@
 use dioxus::prelude::*;
 use dioxus_free_icons::{
-    icons::ld_icons::{LdCompass, LdLibrary, LdPenLine, LdSearch, LdSettings},
+    icons::ld_icons::{LdCompass, LdLibrary, LdPenLine, LdSettings},
     Icon,
 };
 
@@ -19,7 +19,12 @@ pub fn RailIsland() -> Element {
 
     rsx! {
         aside { class: "island is-rail",
-            div { class: "is-rail-brand", "م" }
+            Link {
+                to: Route::Home {},
+                class: "is-rail-brand",
+                "aria-label": "Musanif home",
+                "م"
+            }
             Link {
                 to: Route::Home {},
                 class: if is_active(&Route::Home {}) { "is-rail-item is-rail-item--active" } else { "is-rail-item" },
@@ -34,9 +39,6 @@ pub fn RailIsland() -> Element {
                 to: Route::Authors {},
                 class: if is_active(&Route::Authors {}) { "is-rail-item is-rail-item--active" } else { "is-rail-item" },
                 Icon { icon: LdPenLine, width: 18, height: 18 }
-            }
-            button { class: "is-rail-item",
-                Icon { icon: LdSearch, width: 18, height: 18 }
             }
             div { class: "is-rail-spacer" }
             Link {

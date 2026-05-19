@@ -2,6 +2,8 @@
    The full design system lives in packages/ui/assets/styling/main.css
    and is loaded by the AppNavbar component. */
 
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Nastaliq+Urdu:wght@400;700&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap');
+
 :root, [data-theme="parchment"] {
   --bg-color: #f4ede1;
   --bg-card: #fffdf9;
@@ -17,6 +19,7 @@
   --border-light: #e3d5be;
   --border-faint: rgba(0, 0, 0, 0.06);
   --hover-tint: rgba(0, 0, 0, 0.04);
+  --shadow-card: 0 1px 2px rgba(40, 30, 20, 0.04), 0 4px 16px rgba(40, 30, 20, 0.05);
   --font-urdu: 'Noto Nastaliq Urdu', 'Jameel Noori Nastaleeq', serif;
 }
 
@@ -35,6 +38,7 @@
   --border-light: #262c34;
   --border-faint: rgba(255, 255, 255, 0.05);
   --hover-tint: rgba(255, 255, 255, 0.05);
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.40), 0 4px 16px rgba(0, 0, 0, 0.30);
 }
 
 [data-theme="sepia-dark"] {
@@ -52,6 +56,7 @@
   --border-light: #3a2d24;
   --border-faint: rgba(255, 255, 255, 0.05);
   --hover-tint: rgba(255, 220, 180, 0.04);
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.45), 0 4px 16px rgba(0, 0, 0, 0.35);
 }
 
 [data-theme="ink"] {
@@ -69,6 +74,7 @@
   --border-light: #1c1c1d;
   --border-faint: rgba(255, 255, 255, 0.04);
   --hover-tint: rgba(255, 255, 255, 0.04);
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.80), 0 4px 16px rgba(0, 0, 0, 0.50);
 }
 
 * { box-sizing: border-box; }
@@ -76,9 +82,19 @@
 html, body {
   margin: 0;
   padding: 0;
+  height: 100%;
   color: var(--text-main);
   background: var(--bg-color);
   font-family: 'Inter', system-ui, sans-serif;
-  min-height: 100vh;
   -webkit-font-smoothing: antialiased;
+}
+
+/* Dioxus web mounts the App tree into <div id="main"> by default.
+   The tabstrip + shell are its direct flex children, so #main is the
+   parent that has to be the flex column, not <body>. */
+#main {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }

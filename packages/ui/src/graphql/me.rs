@@ -6,6 +6,7 @@
 use chrono::{DateTime, Utc};
 use cynic::{MutationBuilder, QueryBuilder};
 
+use super::books::BookGql;
 use super::client::run;
 use super::schema::schema;
 use crate::models;
@@ -108,6 +109,7 @@ pub struct BookmarkGql {
     pub last_offset: Option<i32>,
     pub last_read_at: Option<String>,
     pub progress_pct: Option<f64>,
+    pub book: Option<BookGql>,
 }
 
 #[derive(cynic::QueryFragment, Debug, Clone)]
@@ -431,7 +433,7 @@ impl From<BookmarkGql> for models::Bookmark {
             started_at: None,
             completed_at: None,
             updated_at: b.last_read_at.unwrap_or_default(),
-            book: None,
+            book: b.book.map(Into::into),
         }
     }
 }

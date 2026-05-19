@@ -1,6 +1,6 @@
 use dioxus::prelude::*;
 use dioxus_free_icons::{
-    icons::ld_icons::{LdLogIn, LdLogOut, LdPencil, LdShare2, LdUserPlus},
+    icons::ld_icons::{LdLogIn, LdLogOut, LdSettings, LdShare2, LdUserPlus},
     Icon,
 };
 
@@ -48,9 +48,11 @@ pub fn Profile() -> Element {
                             Icon { icon: LdShare2, width: 14, height: 14 }
                             "Share"
                         }
-                        button { class: "is-btn",
-                            Icon { icon: LdPencil, width: 14, height: 14 }
-                            "Edit"
+                        Link {
+                            to: Route::Settings {},
+                            class: "is-btn",
+                            Icon { icon: LdSettings, width: 14, height: 14 }
+                            "Account settings"
                         }
                         button {
                             class: "is-btn",
@@ -86,22 +88,13 @@ pub fn Profile() -> Element {
 
             div { class: "is-main-body",
                 div { class: "profile-hero",
-                    div { class: "profile-hero-avatar",
-                        if let Some(user) = current_user.as_ref() {
-                            "{user.username.chars().next().unwrap_or('?').to_ascii_uppercase()}"
-                        } else {
-                            "G"
-                        }
-                    }
-                    div {
-                        if let Some(user) = current_user.as_ref() {
-                            h3 { class: "profile-hero-name", "{user.username}" }
-                            p { class: "profile-hero-meta", "{user.email}" }
-                        } else {
-                            h3 { class: "profile-hero-name", "Guest" }
-                            p { class: "profile-hero-meta",
-                                "Sign in to sync your progress and highlights."
-                            }
+                    if let Some(user) = current_user.as_ref() {
+                        h3 { class: "profile-hero-name", "{user.username}" }
+                        p { class: "profile-hero-meta", "{user.email}" }
+                    } else {
+                        h3 { class: "profile-hero-name", "Guest" }
+                        p { class: "profile-hero-meta",
+                            "Sign in to sync your progress and highlights."
                         }
                     }
                 }
@@ -205,7 +198,7 @@ pub fn Profile() -> Element {
 fn pace_hint(goal: &crate::models::ReadingGoal) -> Option<String> {
     let remaining = (goal.target - goal.completed).max(0);
     if remaining == 0 {
-        Some("Target reached — nice.".to_string())
+        Some("Target reached, nice.".to_string())
     } else {
         Some(format!("{remaining} to go to hit your {} target.", goal.year))
     }

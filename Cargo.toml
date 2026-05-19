@@ -22,6 +22,7 @@ dotenvy = { version = "0.15" }
 envy = { version = "0.4" }
 futures-util = { version = "0.3", default-features = false, features = ["std", "sink"] }
 gloo-net = { version = "0.6", default-features = false, features = ["websocket"] }
+gloo-timers = { version = "0.3", default-features = false, features = ["futures"] }
 keyring = { version = "3" }
 musanif-contracts = { path = "../musanif-contracts" }
 pulldown-cmark = { version = "0.12" }
@@ -29,6 +30,7 @@ reqwest = { version = "0.12", default-features = true }
 serde = { version = "1", features = ["derive"] }
 serde_json = { version = "1" }
 thiserror = { version = "2" }
+tokio = { version = "1", default-features = false, features = ["time", "rt"] }
 tracing = { version = "0.1" }
 ui = { path = "packages/ui" }
 web-sys = { version = "0.3", features = ["Storage", "Window"] }

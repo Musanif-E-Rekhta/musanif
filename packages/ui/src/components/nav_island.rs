@@ -1,20 +1,23 @@
 use dioxus::prelude::*;
 use dioxus_free_icons::{
-    icons::ld_icons::{LdCompass, LdLibrary, LdPenLine, LdSettings, LdUser},
+    icons::ld_icons::{LdCompass, LdLibrary, LdPenLine, LdSettings},
     Icon,
 };
 
 use crate::state::CURRENT_USER;
 use crate::Route;
 
-/// Slack-style sidebar: brand block, grouped nav sections (Browse / Library),
-/// then a flex spacer that pins Settings + the user pill to the bottom.
+/// Slack-style sidebar: brand anchor, grouped nav sections (Browse / Library),
+/// flex spacer, then Settings and a quiet typographic identity line at the foot.
 #[component]
 pub fn NavIsland() -> Element {
     rsx! {
         aside { class: "island is-nav",
-            div { class: "is-nav-brand",
-                span { class: "is-nav-brand-mark", "مصنف" }
+            Link {
+                to: Route::Home {},
+                class: "is-nav-brand",
+                "aria-label": "Musanif home",
+                span { class: "is-nav-brand-mark", dir: "rtl", lang: "ur", "مصنف" }
                 span { class: "is-nav-brand-name", "Musanif" }
             }
 
@@ -57,21 +60,11 @@ pub fn NavIsland() -> Element {
                 to: Route::Profile {},
                 class: "is-nav-user",
                 active_class: "is-nav-user--active",
-                div { class: "is-nav-user-avatar",
-                    if let Some(user) = CURRENT_USER.read().as_ref() {
-                        {user.username.chars().next().unwrap_or('?').to_ascii_uppercase().to_string()}
-                    } else {
-                        Icon { icon: LdUser, width: 16, height: 16 }
-                    }
-                }
-                div { style: "flex: 1",
-                    if let Some(user) = CURRENT_USER.read().as_ref() {
-                        div { class: "is-nav-user-name", "{user.username}" }
-                        div { class: "is-nav-user-meta", "View profile" }
-                    } else {
-                        div { class: "is-nav-user-name", "Guest" }
-                        div { class: "is-nav-user-meta", "Not signed in" }
-                    }
+                if let Some(user) = CURRENT_USER.read().as_ref() {
+                    div { class: "is-nav-user-name", "{user.username}" }
+                } else {
+                    div { class: "is-nav-user-name", "Guest" }
+                    div { class: "is-nav-user-meta", "Sign in" }
                 }
             }
         }

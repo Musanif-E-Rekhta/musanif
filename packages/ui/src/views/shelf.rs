@@ -54,7 +54,11 @@ pub fn Shelf() -> Element {
                 title: "My Shelf".to_string(),
                 subtitle: "Your saved books".to_string(),
                 actions: rsx! {
-                    button { class: "is-btn", "+ Add book" }
+                    Link {
+                        to: Route::Home {},
+                        class: "is-btn",
+                        "Discover books"
+                    }
                 },
             }
 

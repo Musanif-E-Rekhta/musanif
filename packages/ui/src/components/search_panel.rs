@@ -23,21 +23,40 @@ pub fn SearchPanel() -> Element {
 
     let query = use_signal(String::new);
 
-    let books = use_resource(move || async move {
-        let q = query.read().trim().to_string();
+    // The HTML `autofocus` attribute only fires on initial document load,
+    // so a dynamically-mounted input never gets it. Focus imperatively on
+    // the next frame so the input is in the DOM by the time we call .focus().
+    use_future(move || async move {
+        let mut eval = document::eval(
+            "await new Promise(r => requestAnimationFrame(r)); \
+             const el = document.querySelector('.is-search-panel-input input'); \
+             if (el) el.focus(); \
+             return 'ok';",
+        );
+        let _ = eval.recv::<String>().await;
+    });
+
+    // Read the signal into a concrete String *in the component body* so
+    // SearchPanel itself subscribes to `query` and re-renders on every
+    // keystroke. Then route the value through `use_reactive!` so the
+    // resources re-run whenever the String value (not just signal identity)
+    // changes. This is the same dep-tracking pattern chapter_reader uses
+    // for its book_slug / chapter_slug props.
+    let q = query().trim().to_string();
+
+    let books = use_resource(use_reactive!(|q| async move {
         if q.is_empty() {
             return None;
         }
         api::fetch_books(Some(q), None, Some(6), None).await
-    });
+    }));
 
-    let authors = use_resource(move || async move {
-        let q = query.read().trim().to_string();
+    let authors = use_resource(use_reactive!(|q| async move {
         if q.is_empty() {
             return None;
         }
         api::fetch_authors(Some(q), Some(6), None).await
-    });
+    }));
 
     rsx! {
         div {

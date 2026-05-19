@@ -30,6 +30,16 @@ pub fn ReaderTocDrawer(
         async move { api::fetch_chapters(bs).await }
     });
 
+    // Close the drawer once the route push commits to a new chapter.
+    // Keeping <Link> on the rows preserves middle-click and cmd-click
+    // open-in-new-tab; deferring the close until the prop changes
+    // sidesteps the Dioxus 0.7 Link/onclick unmount race.
+    let mut close_signal = open;
+    use_effect(use_reactive!(|current_chapter_slug| {
+        let _ = current_chapter_slug;
+        close_signal.set(false);
+    }));
+
     let aside_class = if is_open {
         "is-reader-drawer is-reader-drawer--open"
     } else {
@@ -57,7 +67,6 @@ pub fn ReaderTocDrawer(
             "aria-hidden": !is_open,
 
             header { class: "is-reader-drawer-header",
-                p { class: "is-reader-drawer-eyebrow", "CHAPTERS" }
                 h2 { class: "is-reader-drawer-title", "{book_title}" }
             }
 
@@ -79,7 +88,6 @@ pub fn ReaderTocDrawer(
                             chapters: items.clone(),
                             book_slug: book_slug.clone(),
                             current: current_chapter_slug.clone(),
-                            on_pick: move |_| open.set(false),
                         }
                     },
                 }
@@ -93,7 +101,6 @@ fn ChapterList(
     chapters: Vec<ChapterSummary>,
     book_slug: String,
     current: String,
-    on_pick: EventHandler<()>,
 ) -> Element {
     let current_index = chapters
         .iter()
@@ -130,7 +137,6 @@ fn ChapterList(
                                     book_slug: book_slug.clone(),
                                     chapter_slug: ch.slug.clone(),
                                 },
-                                onclick: move |_| on_pick.call(()),
 
                                 span { class: "{mark}", "aria-hidden": "true" }
 

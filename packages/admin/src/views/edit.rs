@@ -33,29 +33,47 @@ fn EditBody(drafts: Resource<Option<Vec<ChapterDraft>>>) -> Element {
         Some(Some(items)) => {
             // Prefer the first flagged or non-approved draft so the editor
             // lands somewhere actionable.
-            let chapter = items
+            let initial_idx = items
                 .iter()
-                .find(|c| c.status == "flagged")
-                .or_else(|| items.iter().find(|c| c.status != "approved"))
-                .or_else(|| items.first())
-                .cloned()
-                .unwrap();
-            rsx! { Diff { chapter, drafts } }
+                .position(|c| c.status == "flagged")
+                .or_else(|| items.iter().position(|c| c.status != "approved"))
+                .unwrap_or(0);
+            rsx! { Diff { items: items.clone(), initial_idx, drafts } }
         }
     }
 }
 
 #[component]
-fn Diff(chapter: ChapterDraft, drafts: Resource<Option<Vec<ChapterDraft>>>) -> Element {
+fn Diff(
+    items: Vec<ChapterDraft>,
+    initial_idx: usize,
+    drafts: Resource<Option<Vec<ChapterDraft>>>,
+) -> Element {
+    let mut idx = use_signal(|| initial_idx);
+    let total = items.len();
+    let cur = idx().min(total.saturating_sub(1));
+    let chapter = items[cur].clone();
+
     let pct = (chapter.confidence * 100.0).round() as i32;
     let title_en = chapter.title_en.as_deref().unwrap_or("").to_string();
     let ai_content = chapter.ai_content.clone();
     let human = chapter.human_content.clone();
     let chapter_id = chapter.id.clone();
 
+    let prev_disabled = cur == 0;
+    let next_disabled = cur + 1 >= total;
+
     rsx! {
         div { class: "adm-edit-toolbar",
-            button { class: "is-btn",
+            button {
+                class: "is-btn",
+                disabled: prev_disabled,
+                onclick: move |_| {
+                    let c = idx();
+                    if c > 0 {
+                        idx.set(c - 1);
+                    }
+                },
                 Icon { icon: LdChevronLeft, width: 14, height: 14 }
                 "Previous"
             }
@@ -64,10 +82,18 @@ fn Diff(chapter: ChapterDraft, drafts: Resource<Option<Vec<ChapterDraft>>>) -> E
                     "{chapter.title_ur}"
                 }
                 span { class: "adm-edit-title-en",
-                    "Chapter {chapter.n} · {title_en} · pp. {chapter.page_range}"
+                    "Chapter {chapter.n} of {total} · {title_en} · pp. {chapter.page_range}"
                 }
             }
-            button { class: "is-btn",
+            button {
+                class: "is-btn",
+                disabled: next_disabled,
+                onclick: move |_| {
+                    let c = idx();
+                    if c + 1 < total {
+                        idx.set(c + 1);
+                    }
+                },
                 "Next"
                 Icon { icon: LdChevronRight, width: 14, height: 14 }
             }

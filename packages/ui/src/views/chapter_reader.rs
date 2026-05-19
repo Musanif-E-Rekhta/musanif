@@ -62,22 +62,30 @@ pub fn ChapterReader(book_slug: String, chapter_slug: String) -> Element {
         };
     }
 
-    let book_slug = use_memo(move || book_slug.clone());
-    let chapter_slug = use_memo(move || chapter_slug.clone());
+    // The prior `use_memo(move || book_slug.clone())` pattern captures the
+    // prop at first mount and never updates (Dioxus 0.7's Memo only re-runs
+    // when signals it reads change, and a plain String prop reads no
+    // signals). That meant navigating between chapters within the reader
+    // (TOC drawer, Up Next link, keyboard `n`) updated the URL but left the
+    // resources fetching the original chapter. Wrap with `use_reactive!` so
+    // the props themselves become tracked dependencies.
+    let chapter = use_resource(use_reactive!(|book_slug, chapter_slug| async move {
+        api::fetch_chapter(book_slug, chapter_slug).await
+    }));
 
-    let chapter = use_resource(move || {
-        let bs = book_slug();
-        let cs = chapter_slug();
-        async move { api::fetch_chapter(bs, cs).await }
-    });
+    // ChapterGql doesn't expose the book — fetch it separately so the
+    // topbar / footer can render the book title instead of a bare slug.
+    let book = use_resource(use_reactive!(|book_slug| async move {
+        api::fetch_book(book_slug).await
+    }));
 
-    let highlights_initial = use_resource(move || {
-        let bs = book_slug();
-        let cs = chapter_slug();
-        async move { api::fetch_chapter_highlights(bs, cs).await.unwrap_or_default() }
-    });
+    let highlights_initial = use_resource(use_reactive!(|book_slug, chapter_slug| async move {
+        api::fetch_chapter_highlights(book_slug, chapter_slug)
+            .await
+            .unwrap_or_default()
+    }));
 
-    record_reading_session_on_unmount(book_slug, chapter_slug);
+    record_reading_session_on_unmount(book_slug.clone(), chapter_slug.clone());
 
     rsx! {
         match &*chapter.read() {
@@ -85,9 +93,19 @@ pub fn ChapterReader(book_slug: String, chapter_slug: String) -> Element {
             Some(None) => rsx! { ReaderNotFound {} },
             Some(Some(ch)) => rsx! {
                 ReaderShell {
+                    // Including chapter_slug as `key` forces ReaderShell to
+                    // remount on cross-chapter navigation, which resets
+                    // internal hooks (keyboard bridge prev/next captures,
+                    // highlights signal, scroll position, drawer open state).
+                    key: "{chapter_slug}",
                     chapter: ch.clone(),
-                    book_slug: book_slug(),
-                    chapter_slug: chapter_slug(),
+                    book_slug: book_slug.clone(),
+                    chapter_slug: chapter_slug.clone(),
+                    book_title: book.read()
+                        .as_ref()
+                        .and_then(|o| o.as_ref())
+                        .map(|b| b.title.clone())
+                        .unwrap_or_default(),
                     initial_highlights: highlights_initial.read().clone().unwrap_or_default(),
                 }
             },
@@ -100,6 +118,7 @@ fn ReaderShell(
     chapter: Chapter,
     book_slug: String,
     chapter_slug: String,
+    book_title: String,
     initial_highlights: Vec<Highlight>,
 ) -> Element {
     let html_content = use_memo({
@@ -225,12 +244,6 @@ fn ReaderShell(
         }
     };
 
-    let book_title = chapter
-        .book
-        .as_ref()
-        .map(|b| b.title.clone())
-        .unwrap_or_default();
-
     let chapter_label_for_meta = chapter
         .title
         .clone()
@@ -277,7 +290,7 @@ fn ReaderShell(
 
                 header { class: "is-reader-header",
                     p { class: "is-reader-header-eyebrow",
-                        "Chapter {chapter.number} · {book_title}"
+                        "CH. {chapter.number:02}"
                     }
                     h1 { class: "is-reader-h1",
                         "{chapter_label_for_meta}"
@@ -762,12 +775,12 @@ fn install_highlight_render_bridge(highlights: Signal<Vec<Highlight>>) {
 
 // ── Reading-session recording (existing behavior, preserved) ────────
 
-fn record_reading_session_on_unmount(book_slug: Memo<String>, chapter_slug: Memo<String>) {
+fn record_reading_session_on_unmount(book_slug: String, chapter_slug: String) {
     let started_at: Signal<DateTime<Utc>> = use_signal(Utc::now);
     use_drop(move || {
         let started = *started_at.peek();
-        let bs = book_slug();
-        let cs = chapter_slug();
+        let bs = book_slug;
+        let cs = chapter_slug;
         let now = Utc::now();
         let mins = ((now - started).num_seconds() / 60) as i32;
         if mins < 1 {

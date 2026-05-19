@@ -1,7 +1,9 @@
 /target
 .agents
 .claude
+.impeccable
 .env
 .env.local
 .env.*.local
 .env.prod
+skills-lock.json

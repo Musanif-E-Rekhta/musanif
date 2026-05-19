@@ -41,19 +41,16 @@ fn App() -> Element {
         WindowTabStrip {
             WindowTab {
                 title: "Ingestion queue".to_string(),
-                glyph: Some("م".to_string()),
                 active: *CURRENT_SECTION.read() == AdminSection::Ingestion,
                 onclick: move |_| { *CURRENT_SECTION.write() = AdminSection::Ingestion; },
             }
             WindowTab {
                 title: "Library".to_string(),
-                glyph: Some("م".to_string()),
                 active: *CURRENT_SECTION.read() == AdminSection::Library,
                 onclick: move |_| { *CURRENT_SECTION.write() = AdminSection::Library; },
             }
             WindowTab {
                 title: "Analytics".to_string(),
-                glyph: Some("م".to_string()),
                 active: *CURRENT_SECTION.read() == AdminSection::Analytics,
                 onclick: move |_| { *CURRENT_SECTION.write() = AdminSection::Analytics; },
             }
@@ -97,10 +94,25 @@ fn IngestionShell() -> Element {
 #[component]
 fn LoadedShell(job: Resource<Option<IngestionJob>>) -> Element {
     match &*job.read() {
-        None => rsx! { div { class: "adm-loading", "Loading job…" } },
+        None => rsx! {
+            div { class: "adm-loading",
+                div { class: "adm-loading-frame",
+                    div { class: "adm-loading-pulse",
+                        span {} span {} span {}
+                    }
+                    div { class: "adm-loading-text", "Loading job" }
+                }
+            }
+        },
         Some(None) => rsx! {
             div { class: "adm-error",
-                p { "Could not load this ingestion job." }
+                div { class: "adm-error-frame",
+                    div { class: "adm-error-mark", "!" }
+                    h2 { class: "adm-error-title", "Couldn't load this job." }
+                    p { class: "adm-error-hint",
+                        "The job may have been removed, or the server didn't respond. Pick another job from the queue, or refresh."
+                    }
+                }
             }
         },
         Some(Some(j)) => {
@@ -131,7 +143,7 @@ fn LoadedShell(job: Resource<Option<IngestionJob>>) -> Element {
                 div { class: "adm-stage-body",
                     match stage {
                         1 => rsx! { UploadStage {} },
-                        2 => rsx! { ProcessStage { job_id: job_id.clone() } },
+                        2 => rsx! { ProcessStage { job: job_clone.clone() } },
                         3 => rsx! { ReviewStage { job_id: job_id.clone() } },
                         4 => rsx! { EditStage { job_id: job_id.clone() } },
                         5 => rsx! { PublishStage { job: job_clone.clone() } },
@@ -145,9 +157,52 @@ fn LoadedShell(job: Resource<Option<IngestionJob>>) -> Element {
 
 #[component]
 fn EmptyShell() -> Element {
+    let jobs = use_resource(move || async move {
+        api::fetch_admin_jobs(None, None, None, None).await
+    });
+
     rsx! {
         div { class: "adm-empty",
-            p { "Select a job from the queue to begin." }
+            div { class: "adm-empty-frame",
+                div { class: "adm-empty-mark", dir: "rtl", lang: "ur", "مصنف" }
+                div { class: "adm-empty-eyebrow", "Sarab pipeline" }
+                h2 { class: "adm-empty-title", "Ready when you are." }
+                p { class: "adm-empty-hint",
+                    "Pick a job from the queue to advance it through upload, processing, review, edits, and publish."
+                }
+                match &*jobs.read() {
+                    Some(Some(items)) if !items.is_empty() => {
+                        let stages: [(u8, &str); 5] = [
+                            (1, "Upload"),
+                            (2, "Process"),
+                            (3, "Review"),
+                            (4, "Edit"),
+                            (5, "Publish"),
+                        ];
+                        let counts: Vec<(u8, &str, usize)> = stages
+                            .iter()
+                            .map(|(n, label)| {
+                                let count = items.iter().filter(|j| j.stage as u8 == *n).count();
+                                (*n, *label, count)
+                            })
+                            .collect();
+                        rsx! {
+                            ul { class: "adm-empty-counts",
+                                for (n, label, count) in counts {
+                                    li { key: "{n}", class: "adm-empty-count",
+                                        span {
+                                            class: if count == 0 { "adm-empty-count-num is-zero" } else { "adm-empty-count-num" },
+                                            "{count}"
+                                        }
+                                        span { class: "adm-empty-count-label", "{label}" }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    _ => rsx! {}
+                }
+            }
         }
     }
 }
@@ -155,10 +210,14 @@ fn EmptyShell() -> Element {
 #[component]
 fn Placeholder(title: String) -> Element {
     rsx! {
-        div { class: "adm-shell",
-            div {
-                style: "flex: 1; display: flex; align-items: center; justify-content: center; color: var(--text-muted); font-size: 14px",
-                "{title}"
+        div { class: "adm-placeholder",
+            div { class: "adm-empty-frame",
+                div { class: "adm-empty-mark", dir: "rtl", lang: "ur", "مصنف" }
+                div { class: "adm-empty-eyebrow", "Coming soon" }
+                h2 { class: "adm-empty-title", "{title}" }
+                p { class: "adm-empty-hint",
+                    "We're focused on ingestion first. Check back once that flow has settled."
+                }
             }
         }
     }

@@ -3,7 +3,7 @@ use dioxus_free_icons::{
     icons::ld_icons::{LdBookmark, LdCheck},
     Icon,
 };
-use ui::api::{self, IngestionJob, PublishCheck};
+use ui::api::{self, CoverVariant, IngestionJob, PublishCheck};
 
 #[derive(Clone, Copy, PartialEq)]
 enum Visibility {
@@ -84,6 +84,8 @@ pub fn PublishStage(job: IngestionJob) -> Element {
                     }
                     div { class: "adm-publish-preview-cap", "Preview · how readers will see it" }
                 }
+
+                CoverVariantPicker { job_id: job_id.clone() }
 
                 div { class: "adm-card",
                     div { class: "adm-card-title", "Visibility" }
@@ -205,6 +207,95 @@ fn CheckRow(check: PublishCheck) -> Element {
             div { class: "adm-check-meta",
                 div { class: "adm-check-label", "{check.label}" }
                 div { class: "adm-check-detail", "{detail}" }
+            }
+        }
+    }
+}
+
+#[component]
+fn CoverVariantPicker(job_id: String) -> Element {
+    let mut variants = use_resource({
+        let id = job_id.clone();
+        move || {
+            let id = id.clone();
+            async move { api::fetch_cover_variants(id).await }
+        }
+    });
+    let mut pending = use_signal(|| Option::<String>::None);
+    let pending_id = pending.read().clone();
+
+    // Snapshot the resource state so the borrow doesn't outlive the match.
+    let snapshot: Option<Option<Vec<CoverVariant>>> = variants.read().clone();
+    match snapshot {
+        None => rsx! {
+            div { class: "adm-card",
+                div { class: "adm-card-title", "Cover variants" }
+                div { class: "adm-variant-state", "Loading variants…" }
+            }
+        },
+        Some(None) => rsx! {},
+        Some(Some(ref items)) if items.is_empty() => rsx! {},
+        Some(Some(items)) => rsx! {
+            div { class: "adm-card",
+                div { class: "adm-card-title", "Cover variants" }
+                div { class: "adm-variant-grid",
+                    for v in items.into_iter() {
+                        VariantTile {
+                            key: "{v.id}",
+                            variant: v.clone(),
+                            pending: pending_id.as_deref() == Some(v.id.as_str()),
+                            onselect: {
+                                let job_id = job_id.clone();
+                                let variant_id = v.id.clone();
+                                move |_| {
+                                    let job_id = job_id.clone();
+                                    let variant_id = variant_id.clone();
+                                    pending.set(Some(variant_id.clone()));
+                                    spawn(async move {
+                                        let _ = api::select_cover_variant(job_id, variant_id).await;
+                                        pending.set(None);
+                                        variants.restart();
+                                    });
+                                }
+                            },
+                        }
+                    }
+                }
+            }
+        },
+    }
+}
+
+#[component]
+fn VariantTile(variant: CoverVariant, pending: bool, onselect: EventHandler<()>) -> Element {
+    let mut class = String::from("adm-variant-tile");
+    if variant.is_selected {
+        class.push_str(" is-selected");
+    }
+    if pending {
+        class.push_str(" is-pending");
+    }
+    let model = variant
+        .model_id
+        .clone()
+        .unwrap_or_else(|| "unknown model".to_string());
+    let prompt = variant.prompt.clone().unwrap_or_default();
+    rsx! {
+        button {
+            class: "{class}",
+            r#type: "button",
+            disabled: pending || variant.is_selected,
+            onclick: move |_| onselect.call(()),
+            div { class: "adm-variant-tile-head",
+                span { class: "adm-variant-tile-model", "{model}" }
+                if variant.is_selected {
+                    span { class: "adm-variant-tile-badge", "Selected" }
+                } else if pending {
+                    span { class: "adm-variant-tile-badge is-pending", "Selecting…" }
+                }
+            }
+            if !prompt.is_empty() {
+                div { class: "adm-variant-tile-prompt", "{prompt}" }
             }
         }
     }

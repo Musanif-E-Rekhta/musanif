@@ -4,9 +4,11 @@
 //! component, which mounts once near the root of every shell and
 //! renders a floating stack in the bottom-right corner.
 //!
-//! Toasts are user-dismissible only — no auto-fade timer. That keeps
-//! the cross-platform story simple (no wasm/native timer split) and
-//! matches what the design tokens favour: explicit, calm UI.
+//! Toasts auto-dismiss after a kind-dependent delay (errors linger
+//! longest) and stay user-dismissible via the close button. The
+//! per-target timer uses `gloo-timers` on wasm and `tokio::time` on
+//! native — both crates are already pulled in transitively for the
+//! WebSocket transport, so this adds no fresh runtime baggage.
 //!
 //! ```ignore
 //! if let Err(e) = api::register(input).await {
@@ -47,6 +49,17 @@ impl ToastKind {
             ToastKind::Success => "✓",
         }
     }
+
+    /// Default auto-dismiss delay. Errors and warnings linger so the
+    /// reader has time to actually parse them; success/info land lighter.
+    fn default_dismiss_ms(self) -> u64 {
+        match self {
+            ToastKind::Error => 8000,
+            ToastKind::Warning => 6500,
+            ToastKind::Info => 5000,
+            ToastKind::Success => 3500,
+        }
+    }
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -55,6 +68,9 @@ pub struct Toast {
     pub kind: ToastKind,
     pub title: String,
     pub message: String,
+    /// `Some(ms)` auto-dismisses after the delay; `None` is sticky and
+    /// requires an explicit close.
+    pub auto_dismiss_ms: Option<u64>,
 }
 
 /// Global queue. Push via [`push`] / [`push_error`]; the
@@ -67,11 +83,23 @@ fn next_id() -> u64 {
 }
 
 pub fn push(kind: ToastKind, title: impl Into<String>, message: impl Into<String>) {
+    push_with(kind, title, message, Some(kind.default_dismiss_ms()));
+}
+
+/// Push with an explicit auto-dismiss override. Pass `None` for a
+/// sticky toast that only the close button can clear.
+pub fn push_with(
+    kind: ToastKind,
+    title: impl Into<String>,
+    message: impl Into<String>,
+    auto_dismiss_ms: Option<u64>,
+) {
     let toast = Toast {
         id: next_id(),
         kind,
         title: title.into(),
         message: message.into(),
+        auto_dismiss_ms,
     };
     TOASTS.write().push(toast);
 }
@@ -100,6 +128,17 @@ pub fn clear_all() {
     TOASTS.write().clear();
 }
 
+async fn sleep_ms(ms: u64) {
+    #[cfg(target_arch = "wasm32")]
+    {
+        gloo_timers::future::TimeoutFuture::new(ms as u32).await;
+    }
+    #[cfg(not(target_arch = "wasm32"))]
+    {
+        tokio::time::sleep(std::time::Duration::from_millis(ms)).await;
+    }
+}
+
 /// Renders the live toast stack. Mount once at the root of each shell.
 #[component]
 pub fn ToastViewport() -> Element {
@@ -124,6 +163,19 @@ fn ToastView(toast: Toast) -> Element {
     let id = toast.id;
     let kind_class = toast.kind.modifier();
     let glyph = toast.kind.glyph();
+    let auto_dismiss_ms = toast.auto_dismiss_ms;
+
+    // `use_future` runs once per mount; the `key={toast.id}` on the
+    // parent guarantees a fresh mount per toast, so the timer captures
+    // this specific id. Manual dismiss unmounts the component and
+    // cancels the future — no double-remove, no zombie timer.
+    use_future(move || async move {
+        if let Some(ms) = auto_dismiss_ms {
+            sleep_ms(ms).await;
+            dismiss(id);
+        }
+    });
+
     rsx! {
         div {
             class: "toast {kind_class}",
